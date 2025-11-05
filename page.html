@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Monitoreo - Camport</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Leaflet CSS for map (to be used later) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+
+    <header>
+        <div class="logo">CAMPORT</div>
+        <nav>
+            <a href="index.html" class="active">Monitoreo</a>
+            <a href="admin.html">Gestión</a>
+            <!-- <a href="reports.html">Reportes</a> -->
+            <a href="#" id="logout-btn">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main>
+        <div id="main-content">
+            <div class="card">
+                <h2>Ubicación del Ganado</h2>
+                <div id="map-container">
+                    <p>El mapa interactivo se mostrará aquí.</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h2>Estado de los Animales</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre (ID)</th>
+                            <th>Ubicación (Lat, Lon)</th>
+                            <th>Batería</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="animal-status-table">
+                        <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <aside id="right-sidebar">
+            <div class="card">
+                <h2>Alertas Recientes</h2>
+                <div id="alerts-panel">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modal for Editing Animal Data -->
+    <div id="edit-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Editar Animal</h2>
+            <form id="edit-form">
+                <div class="form-container">
+                    <div>
+                        <label for="edit-id">ID Animal</label>
+                        <input type="text" id="edit-id" name="id" readonly>
+                    </div>
+                    <div>
+                        <label for="edit-nombre">Nombre</label>
+                        <input type="text" id="edit-nombre" name="nombre" required>
+                    </div>
+                    <div>
+                        <label for="edit-status">Estado</label>
+                        <select id="edit-status" name="status">
+                            <option value="Pastando">Pastando</option>
+                            <option value="Moviéndose">Moviéndose</option>
+                            <option value="Inactivo">Inactivo</option>
+                            <option value="Alerta">Alerta</option>
+                        </select>
+                    </div>
+                    <div class="full-width">
+                        <label for="edit-lat">Latitud</label>
+                        <input type="number" step="any" id="edit-lat" name="lat" placeholder="Ej: -33.45">
+                    </div>
+                    <div class="full-width">
+                        <label for="edit-lon">Longitud</label>
+                        <input type="number" step="any" id="edit-lon" name="lon" placeholder="Ej: -70.66">
+                    </div>
+
+                    <div class="full-width">
+                        <label for="edit-battery">Nivel de Batería (%)</label>
+                        <input type="number" id="edit-battery" name="battery" min="0" max="100">
+                    </div>
+                </div>
+                <div class="form-buttons full-width">
+                    <button type="submit" class="btn">Guardar Cambios</button>
+                    <button type="button" class="btn btn-delete">Eliminar</button>
+                    <button type="button" class="btn btn-cancel">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- Leaflet JS for map (to be used later) -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Custom Map Context Menu -->
+    <ul id="map-context-menu" class="context-menu" style="display: none;">
+        <li id="add-animal-here">Agregar animal aquí</li>
+        <li id="move-animal-here">Mover animal seleccionado aquí</li>
+    </ul>
+
+</body>
+</html>

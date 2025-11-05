@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Animales - Camport</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #edit-map {
+            height: 300px;
+            width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">CAMPORT</div>
+        <nav>
+            <a href="index.html">Monitoreo</a>
+            <a href="admin.html" class="active">Gestión</a>
+            <a href="#" id="logout-btn">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Formulario de Registro de Animal -->
+        <div class="card">
+            <h2>Registrar Nuevo Animal</h2>
+            <form id="animal-form">
+                <div class="form-container">
+                    <input type="text" id="animal-id" placeholder="ID del Collar (se genera automáticamente)" readonly>
+                    <input type="text" id="animal-name" placeholder="Nombre del Animal" required>
+                    <input type="number" id="animal-age" placeholder="Edad (en meses)">
+                    <select id="animal-breed">
+                        <option value="Angus">Angus</option>
+                        <option value="Hereford">Hereford</option>
+                        <option value="Holstein">Holstein</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                    <select id="animal-sex">
+                        <option value="macho">Macho</option>
+                        <option value="hembra">Hembra</option>
+                    </select>
+
+                    <div class="full-width">
+                        <label>Ubicación Inicial (opcional):</label>
+                        <div id="register-map" style="height: 250px; margin-top: 10px; border-radius: 8px;"></div>
+                        <input type="hidden" id="register-animal-lat">
+                        <input type="hidden" id="register-animal-lng">
+                    </div>
+
+                    <div class="full-width">
+                        <button type="submit" class="btn">Registrar Animal</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Listado de Animales -->
+        <div class="card" style="margin-top: 2rem;">
+            <h2>Listado de Animales Registrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Collar</th>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Raza</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="animal-list-table">
+                    <!-- JS will populate this -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal para Editar Animal -->
+    <div id="edit-animal-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Editar Animal</h2>
+            <form id="edit-animal-form">
+                <input type="hidden" id="edit-animal-id-hidden">
+                <div class="form-container">
+                    <input type="text" id="edit-animal-name" placeholder="Nombre">
+                    <input type="number" id="edit-animal-age" placeholder="Edad (meses)">
+                    <select id="edit-animal-breed">
+                        <option value="Angus">Angus</option>
+                        <option value="Hereford">Hereford</option>
+                        <option value="Holstein">Holstein</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                    <select id="edit-animal-sex">
+                        <option value="macho">Macho</option>
+                        <option value="hembra">Hembra</option>
+                    </select>
+                    
+                    <!-- Mapa para seleccionar ubicación -->
+                    <div class="full-width">
+                        <label>Ubicación del Animal:</label>
+                        <div id="edit-map"></div>
+                        <input type="hidden" id="edit-animal-lat">
+                        <input type="hidden" id="edit-animal-lng">
+                    </div>
+
+                    <div class="full-width">
+                        <button type="submit" class="btn">Guardar Cambios</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="admin.js"></script>
+
+</body>
+</html>

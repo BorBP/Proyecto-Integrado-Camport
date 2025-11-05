@@ -1,0 +1,120 @@
+.geofence-container {
+  max-width: 800px;
+}
+
+.geofence-container h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.geofence-info {
+  background: #f9f9f9;
+  padding: 30px;
+  border-radius: 8px;
+}
+
+.geofence-info h3 {
+  color: #667eea;
+  margin-top: 0;
+}
+
+.geofence-info h4 {
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.geofence-info p {
+  color: #666;
+  margin: 10px 0;
+}
+
+.coords-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.coord-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background: white;
+  border-radius: 5px;
+  border-left: 3px solid #667eea;
+}
+
+.coord-item span:first-child {
+  font-weight: 600;
+  color: #333;
+}
+
+.coord-item span:last-child {
+  color: #666;
+  font-family: monospace;
+}
+
+.geofence-actions {
+  margin-top: 20px;
+}
+
+.btn-update,
+.btn-create {
+  padding: 10px 30px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-update:hover,
+.btn-create:hover {
+  background: #5568d3;
+}
+
+.no-geofence {
+  text-align: center;
+  padding: 60px 30px;
+  background: #fff3cd;
+  border-radius: 8px;
+  border: 2px dashed #ffc107;
+}
+
+.no-geofence p {
+  font-size: 18px;
+  color: #856404;
+  margin-bottom: 20px;
+}
+
+.message-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+  color: #1565c0;
+}
+
+.geofence-note {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #999;
+}
+
+.geofence-note p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
