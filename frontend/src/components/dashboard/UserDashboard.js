@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import useWebSocket from '../../hooks/useWebSocket';
 import { animalService, geocercaService } from '../../services/api';
 import MapComponent from '../map/MapContainer';
@@ -8,8 +9,9 @@ import './UserDashboard.css';
 
 const UserDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [animales, setAnimales] = useState([]);
-  const [geocerca, setGeocerca] = useState(null);
+  const [geocercas, setGeocercas] = useState([]);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   
   const { lastMessage, isConnected } = useWebSocket('ws://localhost:8000/ws/telemetria/');
@@ -26,13 +28,13 @@ const UserDashboard = () => {
 
   const loadData = async () => {
     try {
-      const [animalesData, geocercaData] = await Promise.all([
+      const [animalesData, geocercasData] = await Promise.all([
         animalService.getAll(),
-        geocercaService.getActiva().catch(() => null)
+        geocercaService.getAll().catch(() => [])
       ]);
       
       setAnimales(animalesData);
-      setGeocerca(geocercaData);
+      setGeocercas(geocercasData);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -57,13 +59,18 @@ const UserDashboard = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>🐄 Monitor de Ganado en Tiempo Real</h1>
+        <h1>🐄 CAMPORT - Monitor de Ganado en Tiempo Real</h1>
         <div className="header-actions">
           <div className="connection-status">
             <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}></span>
             {isConnected ? 'Conectado' : 'Desconectado'}
           </div>
           <NotificationBell />
+          {user?.is_staff && (
+            <button onClick={() => navigate('/admin')} className="btn-admin">
+              ⚙️ Panel de Administración
+            </button>
+          )}
           <div className="user-info">
             <span>👤 {user?.username}</span>
             {user?.is_staff && <span className="admin-badge">Admin</span>}
@@ -86,8 +93,11 @@ const UserDashboard = () => {
                   {animal.tipo_animal === 'OVINO' ? '🐑' : animal.tipo_animal === 'BOVINO' ? '🐄' : '🐎'}
                 </div>
                 <div className="animal-info">
-                  <strong>{animal.collar_id}</strong>
+                  <strong>{animal.display_id || animal.collar_id}</strong>
                   <p>{animal.tipo_animal} - {animal.raza}</p>
+                  {animal.geocerca_nombre && (
+                    <p className="geocerca-info">📍 {animal.geocerca_nombre}</p>
+                  )}
                   <div className="vitals">
                     <span>🌡️ {animal.temperatura_corporal ? `${animal.temperatura_corporal}°C` : 'N/A'}</span>
                     <span>❤️ {animal.frecuencia_cardiaca ? `${animal.frecuencia_cardiaca} lpm` : 'N/A'}</span>
@@ -101,7 +111,7 @@ const UserDashboard = () => {
         <div className="map-section">
           <MapComponent
             animales={animales}
-            geocerca={geocerca}
+            geocercas={geocercas}
             onAnimalClick={setSelectedAnimal}
           />
         </div>
@@ -113,13 +123,17 @@ const UserDashboard = () => {
               <button onClick={() => setSelectedAnimal(null)} className="btn-close">×</button>
             </div>
             <div className="panel-content">
-              <h4>{selectedAnimal.collar_id}</h4>
+              <h4>{selectedAnimal.display_id || selectedAnimal.collar_id}</h4>
+              <p><strong>Collar ID:</strong> {selectedAnimal.collar_id}</p>
               <p><strong>Tipo:</strong> {selectedAnimal.tipo_animal}</p>
               <p><strong>Raza:</strong> {selectedAnimal.raza}</p>
               <p><strong>Edad:</strong> {selectedAnimal.edad} años</p>
               <p><strong>Peso:</strong> {selectedAnimal.peso_kg} kg</p>
               <p><strong>Sexo:</strong> {selectedAnimal.sexo === 'M' ? 'Macho' : 'Hembra'}</p>
               <p><strong>Color:</strong> {selectedAnimal.color}</p>
+              {selectedAnimal.geocerca_nombre && (
+                <p><strong>Geocerca Asignada:</strong> {selectedAnimal.geocerca_nombre}</p>
+              )}
               <hr />
               <h4>Telemetría Actual</h4>
               <p><strong>Temperatura:</strong> {selectedAnimal.temperatura_corporal ? `${selectedAnimal.temperatura_corporal}°C` : 'N/A'}</p>

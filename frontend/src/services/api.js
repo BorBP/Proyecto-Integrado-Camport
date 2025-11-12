@@ -87,6 +87,10 @@ export const geocercaService = {
     const response = await api.put(`/geocercas/${id}/`, data);
     return response.data;
   },
+  
+  delete: async (id) => {
+    await api.delete(`/geocercas/${id}/`);
+  },
 };
 
 export const alertaService = {

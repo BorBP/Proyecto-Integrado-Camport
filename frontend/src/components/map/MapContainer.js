@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-const MapComponent = ({ animales, geocerca, onAnimalClick }) => {
+const MapComponent = ({ animales, geocercas = [], onAnimalClick }) => {
   const center = [-38.8444, -72.2946]; // Coordenadas de La Araucanía, Chile
   const zoom = 14;
 
@@ -26,7 +26,14 @@ const MapComponent = ({ animales, geocerca, onAnimalClick }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {geocerca && <GeofenceLayer coordenadas={geocerca.coordenadas} />}
+        {/* Renderizar todas las geocercas */}
+        {geocercas.map((geocerca) => (
+          <GeofenceLayer 
+            key={geocerca.id} 
+            coordenadas={geocerca.coordenadas}
+            nombre={geocerca.nombre}
+          />
+        ))}
         
         {animales.map((animal) => (
           <AnimalMarker

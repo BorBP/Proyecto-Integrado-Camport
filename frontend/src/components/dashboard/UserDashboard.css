@@ -73,6 +73,23 @@
   font-size: 12px;
 }
 
+.btn-admin {
+  padding: 8px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-admin:hover {
+  background: #5568d3;
+}
+
 .btn-logout {
   padding: 8px 20px;
   background: #f44336;
@@ -150,6 +167,12 @@
   margin: 5px 0;
   color: #666;
   font-size: 14px;
+}
+
+.geocerca-info {
+  color: #667eea;
+  font-weight: 500;
+  font-size: 12px;
 }
 
 .vitals {

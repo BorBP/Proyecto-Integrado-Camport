@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { animalService } from '../../services/api';
+import { animalService, geocercaService } from '../../services/api';
 import './Tables.css';
 
 const AnimalTable = () => {
   const [animales, setAnimales] = useState([]);
+  const [geocercas, setGeocercas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({
@@ -13,11 +14,13 @@ const AnimalTable = () => {
     edad: '',
     peso_kg: '',
     sexo: 'M',
-    color: ''
+    color: '',
+    geocerca: ''
   });
 
   useEffect(() => {
     loadAnimales();
+    loadGeocercas();
   }, []);
 
   const loadAnimales = async () => {
@@ -26,6 +29,15 @@ const AnimalTable = () => {
       setAnimales(data);
     } catch (error) {
       console.error('Error loading animals:', error);
+    }
+  };
+
+  const loadGeocercas = async () => {
+    try {
+      const data = await geocercaService.getAll();
+      setGeocercas(data);
+    } catch (error) {
+      console.error('Error loading geocercas:', error);
     }
   };
 
@@ -72,7 +84,8 @@ const AnimalTable = () => {
       edad: '',
       peso_kg: '',
       sexo: 'M',
-      color: ''
+      color: '',
+      geocerca: ''
     });
   };
 
@@ -169,6 +182,20 @@ const AnimalTable = () => {
                 required
               />
             </div>
+            <div className="form-group">
+              <label>Geocerca Asignada</label>
+              <select
+                value={formData.geocerca}
+                onChange={(e) => setFormData({...formData, geocerca: e.target.value})}
+              >
+                <option value="">Sin geocerca</option>
+                {geocercas.map(g => (
+                  <option key={g.id} value={g.id}>
+                    {g.nombre} ({g.animales_count || 0} animales)
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-actions">
@@ -185,19 +212,21 @@ const AnimalTable = () => {
       <table className="data-table">
         <thead>
           <tr>
+            <th>ID Display</th>
             <th>Collar ID</th>
             <th>Tipo</th>
             <th>Raza</th>
             <th>Edad</th>
             <th>Peso</th>
             <th>Sexo</th>
-            <th>Color</th>
+            <th>Geocerca</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {animales.map(animal => (
             <tr key={animal.collar_id}>
+              <td><strong>{animal.display_id || '-'}</strong></td>
               <td>{animal.collar_id}</td>
               <td>
                 <span className={`badge badge-${animal.tipo_animal.toLowerCase()}`}>
@@ -208,7 +237,7 @@ const AnimalTable = () => {
               <td>{animal.edad} años</td>
               <td>{animal.peso_kg} kg</td>
               <td>{animal.sexo === 'M' ? 'Macho' : 'Hembra'}</td>
-              <td>{animal.color}</td>
+              <td>{animal.geocerca_nombre || 'Sin asignar'}</td>
               <td>
                 <button onClick={() => handleEdit(animal)} className="btn-edit">
                   ✏️

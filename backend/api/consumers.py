@@ -82,7 +82,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             alerta = Alerta.objects.create(
                 animal=animal,
                 tipo_alerta='TEMPERATURA',
-                mensaje=f'Temperatura alta detectada: {temp}°C'
+                mensaje=f'Fiebre detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
             )
             self.create_user_alerts(alerta)
             alertas.append({
@@ -93,7 +93,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             alerta = Alerta.objects.create(
                 animal=animal,
                 tipo_alerta='TEMPERATURA',
-                mensaje=f'Hipotermia detectada: {temp}°C'
+                mensaje=f'Hipotermia detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
             )
             self.create_user_alerts(alerta)
             alertas.append({
@@ -107,7 +107,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             alerta = Alerta.objects.create(
                 animal=animal,
                 tipo_alerta='FRECUENCIA',
-                mensaje=f'Frecuencia cardíaca alta: {fc} lpm'
+                mensaje=f'Frecuencia cardíaca alta: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
             )
             self.create_user_alerts(alerta)
             alertas.append({
@@ -118,7 +118,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             alerta = Alerta.objects.create(
                 animal=animal,
                 tipo_alerta='FRECUENCIA',
-                mensaje=f'Frecuencia cardíaca baja: {fc} lpm'
+                mensaje=f'Frecuencia cardíaca baja: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
             )
             self.create_user_alerts(alerta)
             alertas.append({
@@ -126,10 +126,11 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                 'mensaje': alerta.mensaje
             })
         
-        # Verificar perímetro
+        # Verificar perímetro - usar la geocerca asignada al animal
         try:
-            geocerca = Geocerca.objects.filter(activa=True).first()
-            if geocerca:
+            # Obtener la geocerca asignada al animal
+            geocerca = animal.geocerca
+            if geocerca and geocerca.activa:
                 point = Point(telemetria_data['longitud'], telemetria_data['latitud'])
                 polygon_coords = [(coord['lng'], coord['lat']) for coord in geocerca.coordenadas]
                 polygon = Polygon(polygon_coords)
@@ -138,7 +139,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='PERIMETRO',
-                        mensaje=f'Animal fuera del perímetro permitido'
+                        mensaje=f'Animal {animal.display_id or animal.collar_id} fuera de geocerca "{geocerca.nombre}"'
                     )
                     self.create_user_alerts(alerta)
                     alertas.append({

@@ -58,9 +58,17 @@ class TelemetriaViewSet(viewsets.ModelViewSet):
         return queryset
 
 class GeocercaViewSet(viewsets.ModelViewSet):
-    queryset = Geocerca.objects.filter(activa=True)
+    queryset = Geocerca.objects.all()
     serializer_class = GeocercaSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Retornar todas las geocercas, con opción de filtrar por activa
+        queryset = Geocerca.objects.all()
+        activa = self.request.query_params.get('activa', None)
+        if activa is not None:
+            queryset = queryset.filter(activa=activa.lower() == 'true')
+        return queryset
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -72,7 +80,7 @@ class GeocercaViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def activa(self, request):
-        geocerca = self.queryset.first()
+        geocerca = Geocerca.objects.filter(activa=True).first()
         if geocerca:
             serializer = self.get_serializer(geocerca)
             return Response(serializer.data)

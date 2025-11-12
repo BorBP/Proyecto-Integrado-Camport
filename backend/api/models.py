@@ -25,16 +25,41 @@ class Animal(models.Model):
     SEXO_ANIMAL_CHOICES = [('M', 'Macho'), ('H', 'Hembra')]
 
     collar_id = models.CharField(max_length=50, unique=True, primary_key=True)
+    display_id = models.CharField(max_length=50, unique=True, editable=False, blank=True)
     tipo_animal = models.CharField(max_length=10, choices=TIPO_ANIMAL_CHOICES)
     raza = models.CharField(max_length=100)
     edad = models.PositiveIntegerField()
     peso_kg = models.FloatField()
     sexo = models.CharField(max_length=1, choices=SEXO_ANIMAL_CHOICES)
     color = models.CharField(max_length=50)
+    geocerca = models.ForeignKey('Geocerca', on_delete=models.SET_NULL, null=True, blank=True, related_name='animales')
     agregado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='ganado_agregado')
 
+    def save(self, *args, **kwargs):
+        # Generar display_id si no existe
+        if not self.display_id:
+            # Obtener el último número para este tipo de animal
+            last_animal = Animal.objects.filter(
+                tipo_animal=self.tipo_animal
+            ).order_by('-display_id').first()
+            
+            if last_animal and last_animal.display_id:
+                # Extraer el número del último display_id
+                try:
+                    last_number = int(last_animal.display_id.split('-')[1])
+                    new_number = last_number + 1
+                except (IndexError, ValueError):
+                    new_number = 1
+            else:
+                new_number = 1
+            
+            # Generar el nuevo display_id
+            self.display_id = f"{self.tipo_animal}-{new_number:03d}"
+        
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.tipo_animal} ({self.collar_id})"
+        return f"{self.tipo_animal} ({self.display_id or self.collar_id})"
 
 # 3. Modelo de Datos de Telemetría
 class Telemetria(models.Model):

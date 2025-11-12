@@ -29,12 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AnimalSerializer(serializers.ModelSerializer):
     agregado_por_username = serializers.CharField(source='agregado_por.username', read_only=True)
+    geocerca_nombre = serializers.CharField(source='geocerca.nombre', read_only=True)
     
     class Meta:
         model = Animal
-        fields = ['collar_id', 'tipo_animal', 'raza', 'edad', 'peso_kg', 
-                  'sexo', 'color', 'agregado_por', 'agregado_por_username']
-        read_only_fields = ['agregado_por']
+        fields = ['collar_id', 'display_id', 'tipo_animal', 'raza', 'edad', 'peso_kg', 
+                  'sexo', 'color', 'geocerca', 'geocerca_nombre', 'agregado_por', 'agregado_por_username']
+        read_only_fields = ['agregado_por', 'display_id']
 
 class TelemetriaSerializer(serializers.ModelSerializer):
     animal_tipo = serializers.CharField(source='animal.tipo_animal', read_only=True)
@@ -47,12 +48,16 @@ class TelemetriaSerializer(serializers.ModelSerializer):
 
 class GeocercaSerializer(serializers.ModelSerializer):
     creado_por_username = serializers.CharField(source='creado_por.username', read_only=True)
+    animales_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Geocerca
         fields = ['id', 'nombre', 'coordenadas', 'creado_por', 
-                  'creado_por_username', 'fecha_creacion', 'activa']
+                  'creado_por_username', 'fecha_creacion', 'activa', 'animales_count']
         read_only_fields = ['creado_por', 'fecha_creacion']
+    
+    def get_animales_count(self, obj):
+        return obj.animales.count()
 
 class AlertaSerializer(serializers.ModelSerializer):
     animal_collar = serializers.CharField(source='animal.collar_id', read_only=True)
