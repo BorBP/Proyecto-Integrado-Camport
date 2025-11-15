@@ -1,176 +1,202 @@
-# 🚀 Guía de Inicio Rápido
+# 🚀 Guía de Inicio Rápido - CAMPORT V6.0
 
-## ✅ Prerrequisitos Instalados
+## ✅ Verificación Previa
 
-- ✓ Python 3.12
-- ✓ Node.js y npm
-- ✓ Backend configurado con Django
-- ✓ Frontend configurado con React
-- ✓ Base de datos poblada con datos de prueba
+Antes de iniciar, ejecuta el diagnóstico:
 
-## 🎯 Iniciar la Aplicación
+```powershell
+.\diagnostico.ps1
+```
 
-### Opción 1: Usando Scripts PowerShell (Recomendado)
+**Debe mostrar:** ✅ "Sistema completamente configurado y listo!"
 
-Abre **3 terminales PowerShell** en la carpeta raíz del proyecto:
+---
 
-**Terminal 1 - Backend:**
+## 🎯 Inicio del Sistema (3 Pasos)
+
+### Paso 1: Iniciar Backend
+
+**Terminal 1:**
 ```powershell
 .\start-backend.ps1
 ```
 
-**Terminal 2 - Simulador (Opcional pero recomendado):**
-```powershell
-.\start-simulator.ps1
+**Verás:**
+```
+🚀 Iniciando Backend Django...
+📡 Backend estará disponible en: http://localhost:8000
+Starting ASGI/Daphne version 4.1.0 development server...
 ```
 
-**Terminal 3 - Frontend:**
+✅ **Listo cuando veas:** "Starting ASGI/Daphne... at http://127.0.0.1:8000/"
+
+---
+
+### Paso 2: Iniciar Frontend
+
+**Terminal 2 (nueva terminal):**
 ```powershell
 .\start-frontend.ps1
 ```
 
-### Opción 2: Comandos Manuales
+**Verás:**
+```
+⚛️  Iniciando Frontend React...
+Compiled successfully!
+You can now view frontend in the browser.
+  Local: http://localhost:3000
+```
 
-**Terminal 1 - Backend:**
+✅ **Listo cuando veas:** "Compiled successfully!"
+
+Se abrirá automáticamente en tu navegador.
+
+---
+
+### Paso 3: Iniciar Simulador (Opcional)
+
+**Terminal 3 (nueva terminal):**
 ```powershell
+.\start-simulator.ps1
+```
+
+**Verás:**
+```
+🐄 Iniciando Simulador CAMPORT V6.0...
+🧲 Gravedad de centroide: 20% atracción
+=====================================================================================
+📡 CICLO #1 - Consultando estado EN VIVO del rebaño...
+  🟢 [1/5] BOVINO-001: (-38.845, -72.298) | Dist:0.0001° | T:38.5°C FC:74lpm
+```
+
+✅ **Listo cuando veas:** "CICLO #1" y datos de animales
+
+---
+
+## 🌐 Acceder al Sistema
+
+1. **Abre tu navegador** en: http://localhost:3000
+
+2. **Login con:**
+   - Usuario: `admin`
+   - Contraseña: `admin123`
+
+3. **Verás:**
+   - 🗺️ Mapa interactivo
+   - 🐄 5 animales en el mapa
+   - 📊 Panel lateral con lista de animales
+   - 🔔 Campana de notificaciones
+
+---
+
+## ✨ Qué Hacer Ahora
+
+### Explorar Dashboard
+- Click en un animal del mapa para ver detalles
+- Observa las actualizaciones en tiempo real
+- Revisa las alertas en la campana 🔔
+
+### Probar Panel de Admin
+- Click en "Panel de Administración"
+- Pestaña "Usuarios": Ver/crear usuarios
+- Pestaña "Ganado": Ver/editar animales
+- Pestaña "Geocercas": Ver perímetro
+
+### Ver Simulador en Acción
+- Observa cómo los animales se mueven cada 20 segundos
+- Los animales tienden naturalmente al centro (gravedad)
+- Cada ~60 segundos puede haber una "fuga"
+
+---
+
+## 🛑 Detener el Sistema
+
+**Para detener cada servicio:**
+
+Presiona `Ctrl+C` en cada terminal
+
+**Orden recomendado:**
+1. Terminal 3 (Simulador) - Ctrl+C
+2. Terminal 2 (Frontend) - Ctrl+C
+3. Terminal 1 (Backend) - Ctrl+C
+
+---
+
+## 🆘 Problemas Comunes
+
+### ❌ "Puerto ya en uso"
+
+**Backend (puerto 8000):**
+```powershell
+# Ver proceso
+netstat -ano | findstr :8000
+# Matar proceso (reemplaza PID)
+taskkill /PID <PID> /F
+```
+
+**Frontend (puerto 3000):**
+```powershell
+# Ver proceso
+netstat -ano | findstr :3000
+# Matar proceso (reemplaza PID)
+taskkill /PID <PID> /F
+```
+
+---
+
+### ❌ "No se puede activar venv"
+
+**Solución:**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+---
+
+### ❌ Backend no conecta
+
+**Verificar:**
+```powershell
+# Probar manualmente
 cd backend
 .\venv\Scripts\Activate.ps1
 python manage.py runserver
 ```
 
-**Terminal 2 - Simulador:**
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-python simulator.py
-```
+---
 
-**Terminal 3 - Frontend:**
+### ❌ Frontend muestra error
+
+**Reinstalar dependencias:**
 ```powershell
 cd frontend
-npm start
-```
-
-## 🌐 Acceder a la Aplicación
-
-1. El frontend se abrirá automáticamente en: **http://localhost:3000**
-2. Backend API disponible en: **http://localhost:8000/api**
-3. Panel de administración Django: **http://localhost:8000/admin**
-
-## 👤 Credenciales de Prueba
-
-### Administrador
-- **Usuario:** `admin`
-- **Contraseña:** `admin123`
-- **Permisos:** Acceso completo al dashboard y panel admin
-
-### Trabajador
-- **Usuario:** `trabajador`
-- **Contraseña:** `trabajador123`
-- **Permisos:** Solo acceso al dashboard de monitoreo
-
-## 🎮 Cómo Usar la Aplicación
-
-### 1. Login
-- Ingresa con cualquiera de las credenciales de arriba
-- El sistema te redirigirá al dashboard
-
-### 2. Dashboard de Monitoreo
-- **Mapa en tiempo real** con animales marcados (🐑 🐄 🐎)
-- **Panel lateral** con lista de animales y sus datos vitales
-- **Campana de notificaciones** para alertas
-- Los datos se actualizan automáticamente si el simulador está activo
-
-### 3. Panel de Administración (Solo Admin)
-- Clic en tu nombre de usuario → "Dashboard" te llevará de vuelta al mapa
-- O visita directamente: **http://localhost:3000/admin**
-
-**Pestañas disponibles:**
-- **👥 Usuarios:** CRUD completo de usuarios del sistema
-- **🐄 Ganado:** CRUD completo de animales
-- **🗺️ Geocerca:** Visualización del perímetro configurado
-
-### 4. Sistema de Alertas
-
-El sistema genera alertas automáticas cuando:
-- 🌡️ **Temperatura anormal:** < 37.5°C o > 40°C
-- ❤️ **Frecuencia cardíaca anormal:** < 40 lpm o > 120 lpm
-- 🗺️ **Fuera de perímetro:** Animal sale de la geocerca
-
-Las alertas aparecen en la campana 🔔 en tiempo real.
-
-## 🧪 Probar Alertas Manualmente
-
-Puedes simular emergencias usando la API REST:
-
-```bash
-# Simular fiebre
-curl -X POST http://localhost:8000/api/simulate_emergency/OVINO-001/fiebre/
-
-# Simular animal fuera de perímetro
-curl -X POST http://localhost:8000/api/simulate_emergency/BOVINO-001/perimetro/
-
-# Simular taquicardia
-curl -X POST http://localhost:8000/api/simulate_emergency/EQUINO-001/taquicardia/
-
-# Simular hipotermia
-curl -X POST http://localhost:8000/api/simulate_emergency/OVINO-002/hipotermia/
-```
-
-## 📊 Animales Disponibles
-
-El sistema incluye 5 animales de prueba:
-
-1. **OVINO-001** - Oveja Suffolk
-2. **OVINO-002** - Oveja Merino
-3. **BOVINO-001** - Vaca Angus
-4. **BOVINO-002** - Vaca Hereford
-5. **EQUINO-001** - Caballo Criollo
-
-## 🔧 Si Algo Sale Mal
-
-### Backend no inicia
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-python manage.py migrate
-python populate_db.py
-```
-
-### Frontend no inicia
-```powershell
-cd frontend
+Remove-Item -Recurse -Force node_modules
 npm install
-npm start
 ```
 
-### WebSocket no conecta
-- Asegúrate de que el backend esté corriendo
-- Verifica que no haya otro proceso usando el puerto 8000
+---
 
-### Sin datos en el mapa
-- Inicia el simulador (start-simulator.ps1)
-- O crea telemetría manualmente vía API
+## 📖 Más Información
 
-## 📚 Más Información
+- **Documentación completa:** [DOCUMENTACION.md](DOCUMENTACION.md)
+- **Estructura del proyecto:** [ESTRUCTURA.md](ESTRUCTURA.md)
+- **Diagnóstico del sistema:** `.\diagnostico.ps1`
 
-Ver **README.md** para documentación completa de:
-- Arquitectura del sistema
-- API endpoints
-- Configuración avanzada
-- Tecnologías utilizadas
+---
 
-## ✨ Funcionalidades Destacadas
+## 🎯 Checklist de Inicio
 
-✅ Monitoreo en tiempo real con WebSockets
-✅ Mapa interactivo con OpenStreetMap
-✅ Sistema de alertas automáticas
-✅ Gestión completa de usuarios y ganado (Admin)
-✅ Geocercas configurables
-✅ Dashboard responsive
-✅ Autenticación JWT
-✅ API RESTful completa
+- [ ] Ejecuté `.\diagnostico.ps1` → Todo OK
+- [ ] Terminal 1: `.\start-backend.ps1` → Corriendo
+- [ ] Terminal 2: `.\start-frontend.ps1` → Corriendo
+- [ ] Terminal 3: `.\start-simulator.ps1` → Corriendo
+- [ ] Navegador en http://localhost:3000
+- [ ] Login exitoso con admin/admin123
+- [ ] Veo el mapa con 5 animales
+- [ ] Los animales se actualizan cada 20 seg
 
-## 🎉 ¡Listo!
+---
 
-La aplicación está completamente funcional. Explora las diferentes funcionalidades y disfruta del monitoreo de ganado en tiempo real! 🐄🗺️
+**¡Sistema listo! Disfruta explorando CAMPORT V6.0** 🐄🚀
+
+**Para ayuda detallada:** [DOCUMENTACION.md](DOCUMENTACION.md)
