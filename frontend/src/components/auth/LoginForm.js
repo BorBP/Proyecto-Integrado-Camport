@@ -57,11 +57,11 @@ const LoginForm = () => {
             {loading ? 'Ingresando...' : 'Iniciar Sesión'}
           </button>
         </form>
-        <div className="demo-credentials">
+        {/* <div className="demo-credentials">
           <p><strong>Credenciales de prueba:</strong></p>
           <p>Admin: admin / admin123</p>
           <p>Trabajador: trabajador / trabajador123</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
