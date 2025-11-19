@@ -1,7 +1,7 @@
 # 🐄 CAMPORT V8.0 - Sistema de Monitoreo de Ganado en Tiempo Real
 
-**Versión:** V8.0 - Signos Vitales Realistas con Intervalos Independientes  
-**Estado:** ✅ VALIDADO - Todas las pruebas pasadas (100%)  
+**Versión:** V8.0 - Sistema Completo de Monitoreo Inteligente  
+**Estado:** ✅ VALIDADO - Producción Ready  
 **Fecha:** 19 de Noviembre de 2025
 
 Sistema fullstack completo para monitoreo de ganado con geolocalización en tiempo real, telemetría de signos vitales y sistema de alertas inteligentes.
@@ -18,7 +18,7 @@ Sistema fullstack completo para monitoreo de ganado con geolocalización en tiem
   - Frecuencia Cardíaca: cada 2s
 
 - **🚨 Sistema de Alertas Inteligente:**
-  - Cooldown de 180s para alertas vitales (Temp/FC)
+  - Cooldown de 90s para alertas vitales (Temp/FC)
   - Cooldown de 60s para alertas de perímetro
   - Variación automática entre animales
   - Desfase de 30s entre tipos de alerta
@@ -30,7 +30,7 @@ Sistema fullstack completo para monitoreo de ganado con geolocalización en tiem
 - **📊 Reportes y Exportación:**
   - Sistema de ciclo de vida de alertas
   - Generación de reportes desde alertas resueltas
-  - Exportación a XML estructurado
+  - Exportación a CSV estructurado
 
 - **✅ 100% Validado:**
   - 20/20 pruebas unitarias pasadas
@@ -44,10 +44,7 @@ Sistema fullstack completo para monitoreo de ganado con geolocalización en tiem
 
 | Documento | Descripción |
 |-----------|-------------|
-| **[REPORTE-COMPLETO-PRUEBAS.md](REPORTE-COMPLETO-PRUEBAS.md)** | 📋 Reporte completo de pruebas y validación |
-| **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** | ⚡ Guía rápida para iniciar el sistema |
-| **[DOCUMENTACION.md](DOCUMENTACION.md)** | 📖 Documentación completa y detallada |
-| **[ESTRUCTURA.md](ESTRUCTURA.md)** | 📁 Estructura del proyecto |
+| **[DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)** | 📖 Documentación completa del sistema |
 | **`start-all.ps1`** | 🚀 Script unificado de inicio |
 
 ---
@@ -307,85 +304,21 @@ cd backend
 
 ---
 
-## 📊 Monitoreo en Tiempo Real
-
-### Verificar telemetría
-```sql
--- Últimas posiciones
-SELECT animal_id, latitud, longitud, timestamp 
-FROM api_telemetria 
-ORDER BY timestamp DESC 
-LIMIT 10;
-```
-
-### Verificar alertas activas
-```sql
--- Alertas no resueltas
-SELECT * FROM api_alerta 
-WHERE resuelta = 0 
-ORDER BY timestamp DESC;
-```
-
----
-
 ## 🚀 Comandos Útiles
 
-### Backend
+### Ejecutar Pruebas
 ```powershell
 cd backend
 .\venv\Scripts\Activate.ps1
-
-# Migraciones
-python manage.py makemigrations
-python manage.py migrate
-
-# Crear superusuario
-python manage.py createsuperuser
-
-# Poblar base de datos
-python populate_db.py
-
-# Ejecutar tests
 python test_suite_completo.py
 ```
 
-### Frontend
+### Verificar Alertas
 ```powershell
-cd frontend
-
-# Instalar dependencias
-npm install
-
-# Iniciar en desarrollo
-npm start
-
-# Build para producción
-npm run build
+cd backend
+.\venv\Scripts\Activate.ps1
+python check_alertas.py
 ```
-
----
-
-## 📈 Próximos Pasos Recomendados
-
-1. **Optimización de Base de Datos**
-   - Migrar a PostgreSQL para producción
-   - Índices en campos frecuentes
-   - Particionamiento de telemetría antigua
-
-2. **Mejoras de UI/UX**
-   - Gráficos de histórico de signos vitales
-   - Heatmap de movimiento de animales
-   - Predicción de alertas con Machine Learning
-
-3. **Escalabilidad**
-   - Redis para caché y WebSocket scaling
-   - Celery para tareas asíncronas
-   - Docker para deployment
-
-4. **Monitoreo y Logging**
-   - Integración con Sentry para errores
-   - Logging centralizado
-   - Métricas con Prometheus + Grafana
 
 ---
 
@@ -395,17 +328,9 @@ npm run build
 - ✅ Intervalos independientes para movimiento, temperatura y FC
 - ✅ Sistema de alertas inteligente con cooldown
 - ✅ Oveja negra con selección automática
-- ✅ Sistema de reportes y exportación XML
+- ✅ Sistema de reportes y exportación CSV
 - ✅ 100% de pruebas pasadas
 - ✅ Validación completa en tiempo real
-
-### V7.0
-- Sistema de alertas básico
-- Geocercas editables
-
-### V6.0
-- Gravedad de centroide
-- Simulador mejorado
 
 ---
 
@@ -419,8 +344,8 @@ Todos los derechos reservados © 2025
 ## 👥 Soporte
 
 Para problemas o preguntas:
-1. Consultar [REPORTE-COMPLETO-PRUEBAS.md](REPORTE-COMPLETO-PRUEBAS.md)
-2. Ejecutar `test_suite_completo.py` para diagnóstico
+1. Consultar [DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)
+2. Ejecutar diagnóstico: `.\diagnostico.ps1`
 3. Revisar logs del sistema
 
 ---
@@ -439,6 +364,6 @@ Para problemas o preguntas:
 
 ---
 
-**Versión:** V8.0 - Signos Vitales Realistas  
+**Versión:** V8.0 - Sistema Completo  
 **Última actualización:** 19 de Noviembre de 2025  
 **Estado:** ✅ VALIDADO (20/20 pruebas pasadas)
