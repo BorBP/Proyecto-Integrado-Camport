@@ -1,88 +1,243 @@
 # 🐄 CAMPORT - Sistema de Monitoreo de Ganado en Tiempo Real
 
-**Versión:** 8.0  
-**Estado:** ✅ FUNCIONANDO  
-**Fecha:** Noviembre 2025
+<p align="center">
+  <img src="https://img.shields.io/badge/version-8.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/status-funcionando-success.svg" alt="Status">
+  <img src="https://img.shields.io/badge/django-5.0-green.svg" alt="Django">
+  <img src="https://img.shields.io/badge/react-18-61dafb.svg" alt="React">
+</p>
 
-Sistema fullstack para monitoreo de ganado con geolocalización GPS, telemetría de signos vitales y alertas inteligentes en tiempo real.
+Sistema fullstack para monitoreo de ganado en tiempo real con geolocalización GPS, telemetría de signos vitales (temperatura, frecuencia cardíaca) y sistema de alertas inteligentes.
+
+---
+
+## 📋 Tabla de Contenidos
+
+- [Inicio Rápido](#-inicio-rápido)
+- [Instalación Inicial](#-instalación-inicial)
+- [Características](#-características-principales)
+- [Documentación](#-documentación)
+- [Solución de Problemas](#-solución-de-problemas)
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Ver **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** para comenzar en 2 minutos
+> **¿Primera vez?** Lee la [Guía de Instalación Inicial](#-instalación-inicial) primero.
 
-O ejecuta estos 3 comandos en 3 terminales diferentes:
+### Para Usuarios que ya Instalaron:
 
+Ejecuta estos 3 comandos en **3 terminales diferentes**:
+
+**Terminal 1 - Backend:**
 ```powershell
-# Terminal 1: Backend
 .\start-backend.ps1
+```
 
-# Terminal 2: Frontend  
+**Terminal 2 - Frontend:**
+```powershell
 .\start-frontend.ps1
+```
 
-# Terminal 3: Simulador
+**Terminal 3 - Simulador:**
+```powershell
 .\start-simulator.ps1 v8
 ```
 
-**Acceso:**
-- 🌐 Frontend: http://localhost:3000
-- 🔐 Usuario: `admin` / Contraseña: `admin123`
+### Acceder al Sistema
+
+Una vez iniciados los 3 servicios, abre tu navegador:
+
+- **🌐 Aplicación Web:** http://localhost:3000
+- **👤 Usuario:** `admin`
+- **🔑 Contraseña:** `admin123`
+
+### ¿Qué deberías ver?
+
+✅ Un mapa con 6 animales moviéndose en tiempo real  
+✅ Alertas apareciendo cuando hay anomalías  
+✅ Panel lateral con lista de animales  
+✅ Geocercas dibujadas en el mapa
 
 ---
 
 ## 📚 Documentación
 
-| Archivo | Descripción |
-|---------|-------------|
-| **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** | ⚡ Guía de inicio rápido (2 minutos) |
-| **[DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)** | 📖 Documentación técnica completa |
-| **[REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md)** | 📊 Reporte de pruebas del sistema |
-| **[RESUMEN-EJECUTIVO.md](RESUMEN-EJECUTIVO.md)** | 📋 Resumen ejecutivo del proyecto |
+| Documento | Para Quién | Descripción |
+|-----------|-----------|-------------|
+| **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** ⚡ | Nuevos usuarios | Guía completa de inicio (2 minutos) |
+| **[DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)** 📖 | Desarrolladores | Documentación técnica completa |
+| **[ESTRUCTURA-PROYECTO.md](ESTRUCTURA-PROYECTO.md)** 📋 | Desarrolladores | Organización del código |
+| **[REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md)** 🧪 | QA/Testing | Reporte de pruebas del sistema |
 
 ---
 
 ## ✨ Características Principales
 
-## ✨ Características Principales
-
 ### 🗺️ Monitoreo en Tiempo Real
-- **Mapa interactivo** con OpenStreetMap
-- **6 animales** monitoreados simultáneamente
-- **Actualización automática** de posiciones (cada 3 segundos)
-- **3 geocercas** activas con validación geométrica
+- Mapa interactivo con OpenStreetMap
+- 6 animales monitoreados simultáneamente
+- Actualización automática de posiciones cada 3 segundos
+- 3 geocercas activas con validación geométrica
 
 ### 🚨 Sistema de Alertas Inteligente
 - **Temperatura:** Fiebre (>40°C) | Hipotermia (<37.5°C)
-- **Frecuencia Cardíaca:** Agitación (>100 BPM) | Bajo estímulo (<50 BPM)  
+- **Frecuencia Cardíaca:** Agitación (>100 BPM) | Bajo estímulo (<50 BPM)
 - **Perímetro:** Detección de fuga en tiempo real
 - **Cooldown anti-spam:** Vitales (180s) | Perímetro (60s)
 
 ### 📊 Telemetría Avanzada
-- **Intervalos independientes** por tipo de dato
-- **Variación gradual y realista** de signos vitales
-- **Almacenamiento histórico** completo
-- **Panel de administración** para gestión
+- Intervalos independientes por tipo de dato
+- Variación gradual y realista de signos vitales
+- Almacenamiento histórico completo
+- Panel de administración para gestión
 
-### 🔧 Tecnologías
+---
 
-**Backend:**
-- Django 5.0.3 + Django REST Framework
-- WebSocket (Channels 4.0 + Daphne)
-- Shapely 2.0.2 (geometría)
-- SQLite / PostgreSQL
+## 📦 Instalación Inicial
 
-**Frontend:**
+> **⚠️ Importante:** Solo necesitas hacer esto **UNA VEZ** la primera vez que uses el proyecto.
+
+### Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+- **Python 3.12 o superior** - [Descargar](https://www.python.org/downloads/)
+- **Node.js 16 o superior** - [Descargar](https://nodejs.org/)
+- **Git** - [Descargar](https://git-scm.com/)
+
+### Paso 1: Clonar el Repositorio
+
+```bash
+git clone https://github.com/BorBP/Proyecto-Integrado-Camport.git
+cd Proyecto-Integrado-Camport
+```
+
+### Paso 2: Configurar el Backend
+
+```bash
+cd backend
+
+# Crear entorno virtual
+python -m venv venv
+
+# Activar entorno virtual
+.\venv\Scripts\Activate.ps1     # Windows PowerShell
+# .\venv\Scripts\activate.bat   # Windows CMD
+# source venv/bin/activate       # Linux/Mac
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Crear base de datos
+python manage.py migrate
+
+# Poblar con datos de prueba
+python populate_db.py
+```
+
+**✅ Listo!** El backend está configurado.
+
+### Paso 3: Configurar el Frontend
+
+Abre **otra terminal** y ejecuta:
+
+```bash
+cd frontend
+
+# Instalar dependencias
+npm install
+```
+
+**✅ Listo!** El frontend está configurado.
+
+### Paso 4: Iniciar el Sistema
+
+Ahora puedes usar los [comandos de inicio rápido](#-inicio-rápido).
+
+---
+
+## 🔧 Tecnologías Utilizadas
+
+<details>
+<summary><b>Backend (Django + WebSocket)</b></summary>
+
+- Django 5.0.3
+- Django REST Framework 3.14.0
+- Django Channels 4.0.0 (WebSocket)
+- Daphne (ASGI Server)
+- Shapely 2.0.2 (Geometría)
+- SQLite (Desarrollo) / PostgreSQL (Producción)
+
+</details>
+
+<details>
+<summary><b>Frontend (React)</b></summary>
+
 - React 18
-- Leaflet + React Leaflet
-- WebSocket con reconexión automática
-- Context API para estado global
+- React Leaflet (Mapas)
+- Leaflet.Editable
+- React Router DOM
+- Axios (HTTP)
+- ReconnectingWebSocket
+- Context API
 
-**Simulador V8:**
+</details>
+
+<details>
+<summary><b>Simulador V8</b></summary>
+
 - Python asyncio
+- WebSockets
 - Intervalos independientes
 - Signos vitales realistas
 - Sistema de oveja negra
+
+</details>
+
+---
+
+## 👥 Usuarios de Prueba
+
+El sistema viene con 2 usuarios pre-creados:
+
+| Usuario | Email | Contraseña | Rol |
+|---------|-------|------------|-----|
+| **admin** | admin@ganado.com | admin123 | Administrador completo |
+| **trabajador** | trabajador@ganado.com | trabajador123 | Usuario estándar |
+
+---
+
+## 🐄 Animales en el Sistema
+
+El sistema viene con 6 animales de prueba:
+
+1. **BOVINO-001** → Asignado a "Perimetro secundario"
+2. **BOVINO-002** 🐑 → Asignado a "Perímetro Principal" (Oveja Negra)
+3. **EQUINO-001** → Asignado a "Perímetro Principal"
+4. **EQUINO-002** → Asignado a "home_dash"
+5. **OVINO-001** → Asignado a "Perimetro secundario"
+6. **OVINO-002** → Asignado a "Perimetro secundario"
+
+> **Nota:** La "Oveja Negra" (🐑) es un animal que tiene comportamiento errático y mayor tendencia a escapar.
+
+---
+
+## 🎮 Versiones del Simulador
+
+El proyecto incluye 3 versiones del simulador. Usa **V8** (recomendado):
+
+| Versión | Características | Comando |
+|---------|----------------|---------|
+| V6 | Gravedad de centroide | `.\start-simulator.ps1 v6` |
+| V7 | Random walk natural | `.\start-simulator.ps1 v7` |
+| **V8** ⭐ | **Signos vitales realistas (RECOMENDADO)** | `.\start-simulator.ps1 v8` |
+
+**¿Por qué V8?**
+- ✅ Intervalos independientes (movimiento, temperatura, BPM)
+- ✅ Signos vitales con variación gradual y realista
+- ✅ Sistema de cooldown inteligente
+- ✅ Alertas más precisas
 
 ---
 
@@ -90,184 +245,144 @@ O ejecuta estos 3 comandos en 3 terminales diferentes:
 
 ```
 CAMPORT/
-├── backend/                      # Django + WebSocket
-│   ├── api/                     # API REST y modelos
-│   │   ├── models.py            # Animal, Telemetria, Alerta, etc.
-│   │   ├── views.py             # Endpoints API
-│   │   ├── consumers.py         # WebSocket handlers
-│   │   └── management/commands/ # Simuladores V6, V7, V8
-│   ├── utils/                   # Scripts de utilidad
-│   ├── populate_db.py           # Datos iniciales
-│   └── manage.py
+├── 📂 backend/                    # Servidor Django
+│   ├── 📂 api/                   # Aplicación principal
+│   │   ├── models.py             # Modelos de datos
+│   │   ├── views.py              # API REST
+│   │   ├── consumers.py          # WebSocket
+│   │   └── management/commands/  # Simuladores
+│   ├── 📂 utils/                 # Scripts de utilidad
+│   ├── populate_db.py            # Poblar base de datos
+│   └── manage.py                 # CLI de Django
 │
-├── frontend/                     # React App
-│   ├── src/
-│   │   ├── components/          # Mapa, Dashboard, Admin
-│   │   ├── context/             # Estado global
-│   │   └── services/            # API y WebSocket
+├── 📂 frontend/                   # Aplicación React
+│   ├── 📂 src/
+│   │   ├── 📂 components/        # Componentes React
+│   │   ├── 📂 context/           # Estado global
+│   │   └── 📂 services/          # API y WebSocket
 │   └── package.json
 │
-├── start-backend.ps1            # Iniciar backend
-├── start-frontend.ps1           # Iniciar frontend
-├── start-simulator.ps1          # Iniciar simulador (V6/V7/V8)
-├── stop-all.ps1                 # Detener todo
+├── 🚀 start-backend.ps1          # Iniciar backend
+├── 🚀 start-frontend.ps1         # Iniciar frontend
+├── 🚀 start-simulator.ps1        # Iniciar simulador
+├── 🛑 stop-all.ps1               # Detener todo
 │
-├── INICIO-RAPIDO.md             # Guía de inicio rápido
-├── DOCUMENTACION-COMPLETA.md    # Documentación técnica
-└── README.md                    # Este archivo
-```
-
----
-
-## 📦 Instalación Inicial
-
-### Requisitos Previos
-- Python 3.12+
-- Node.js 16+
-- Git
-
-### Backend
-```bash
-cd backend
-python -m venv venv
-.\venv\Scripts\Activate.ps1     # Windows
-# source venv/bin/activate      # Linux/Mac
-pip install -r requirements.txt
-python manage.py migrate
-python populate_db.py           # Crear datos de prueba
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-```
-
----
-
-## 🎮 Versiones del Simulador
-
-| Versión | Características | Comando |
-|---------|----------------|---------|
-| **V6** | Gravedad de centroide, fugas aleatorias | `.\start-simulator.ps1 v6` |
-| **V7** | Random walk natural, oveja negra manual | `.\start-simulator.ps1 v7` |
-| **V8** ⭐ | Signos vitales realistas, intervalos independientes | `.\start-simulator.ps1 v8` |
-
-**Recomendado:** V8 por su realismo y funcionalidades avanzadas
-
----
-
-## 👤 Usuarios del Sistema
-
-| Usuario | Email | Contraseña | Rol |
-|---------|-------|------------|-----|
-| admin | admin@ganado.com | admin123 | Administrador |
-| trabajador | trabajador@ganado.com | trabajador123 | Usuario |
-
----
-
-## 🐄 Animales en el Sistema
-
-1. **BOVINO-001** → Perimetro secundario
-2. **BOVINO-002** 🐑 → Perímetro Principal (Oveja Negra)
-3. **EQUINO-001** → Perímetro Principal  
-4. **EQUINO-002** → home_dash
-5. **OVINO-001** → Perimetro secundario
-6. **OVINO-002** → Perimetro secundario
-
----
-
-## 🔧 Utilidades
-
-### Diagnóstico del Sistema
-```bash
-cd backend
-python utils/diagnostico_sistema.py
-```
-
-Muestra el estado completo: animales, geocercas, telemetría, alertas.
-
-### Limpiar Telemetría
-```bash
-cd backend
-python manage.py shell -c "from api.models import Telemetria; Telemetria.objects.all().delete(); print('✓ Limpiado')"
-```
-
-### Limpiar Alertas
-```bash
-cd backend
-python manage.py shell -c "from api.models import Alerta; Alerta.objects.all().delete(); print('✓ Limpiado')"
+└── 📄 README.md                  # Este archivo
 ```
 
 ---
 
 ## 🛠️ Solución de Problemas
 
-### Puerto 8000 ocupado
+### ❌ Error: "Puerto 8000 ya está en uso"
+
+**Solución:**
 ```powershell
+# Encontrar el proceso
 netstat -ano | findstr :8000
+
+# Matar el proceso (reemplaza <PID> con el número que obtuviste)
 taskkill /PID <PID> /F
 ```
 
-### No hay animales en la BD
+### ❌ Error: "Animal matching query does not exist"
+
+**Problema:** No hay animales en la base de datos.
+
+**Solución:**
 ```bash
 cd backend
 python populate_db.py
 ```
 
-### WebSocket no conecta
-1. Verificar que el backend esté en puerto 8000
-2. Revisar logs del backend para errores
-3. Verificar firewall/antivirus
+### ❌ Los animales no se mueven en el mapa
 
-### Animales no se mueven en el mapa
-1. Asegurar que el simulador esté ejecutándose
-2. Verificar logs: "Telemetría recibida" en backend
-3. Revisar consola del navegador (F12)
+**Verifica:**
+1. ✅ El simulador está ejecutándose (terminal 3)
+2. ✅ En los logs del backend ves "Telemetría recibida"
+3. ✅ La consola del navegador (F12) no muestra errores
 
-Ver **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** para más soluciones.
+### ❌ El frontend no se conecta al backend
+
+**Solución:**
+1. Verifica que el backend esté en puerto 8000
+2. Revisa que no haya errores en los logs del backend
+3. Verifica tu firewall/antivirus
+
+### 🔍 Diagnóstico del Sistema
+
+Para ver el estado completo del sistema:
+
+```bash
+cd backend
+python utils/diagnostico_sistema.py
+```
+
+Esto te mostrará:
+- Total de animales y sus geocercas
+- Registros de telemetría
+- Alertas pendientes
+- Estado general
+
+**📖 Más soluciones:** Ver [INICIO-RAPIDO.md](INICIO-RAPIDO.md#-solución-de-problemas)
 
 ---
 
-## 📝 Comandos de Desarrollo
+## 🔧 Comandos Útiles
 
-### Crear migraciones
+### Limpiar Datos
+
+**Limpiar telemetría:**
+```bash
+cd backend
+python manage.py shell -c "from api.models import Telemetria; Telemetria.objects.all().delete(); print('✓ Limpiado')"
+```
+
+**Limpiar alertas:**
+```bash
+cd backend
+python manage.py shell -c "from api.models import Alerta; Alerta.objects.all().delete(); print('✓ Limpiado')"
+```
+
+### Comandos de Django
+
+**Crear migraciones:**
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Crear superusuario
+**Crear superusuario:**
 ```bash
 python manage.py createsuperuser
 ```
 
-### Acceder al shell de Django
+**Acceder al shell:**
 ```bash
 python manage.py shell
 ```
 
-### Ver rutas del frontend
-```bash
-cd frontend
-npm run build    # Producción
-```
-
 ---
 
-## 📊 Métricas del Sistema
+## 📊 Estado del Proyecto
 
-**Rendimiento validado:**
-- ⚡ Actualización de posiciones cada 3s
-- ⚡ Signos vitales cada 2-5s
+**✅ SISTEMA 100% FUNCIONAL**
+
+El sistema ha sido probado exhaustivamente y está listo para:
+
+- ✅ Monitoreo en tiempo real de ganado
+- ✅ Generación y gestión de alertas
+- ✅ Visualización geográfica precisa
+- ✅ Gestión de múltiples geocercas
+- ✅ Panel de administración completo
+
+**Métricas verificadas:**
+- ⚡ Actualización de posiciones cada 3 segundos
+- ⚡ Signos vitales cada 2-5 segundos
 - ⚡ Latencia WebSocket < 50ms
 - ⚡ 100% de precisión geográfica
 
-**Estado:**
-- ✅ Sistema completamente funcional
-- ✅ Flujo de datos verificado
-- ✅ Alertas funcionando correctamente
-- ✅ Broadcast a múltiples clientes
+**📊 Ver detalles:** [REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md)
 
 ---
 
@@ -278,20 +393,22 @@ Todos los derechos reservados © 2025
 
 ---
 
-## 🎉 Estado del Proyecto
+## 🆘 Soporte
 
-**✅ SISTEMA OPERATIVO Y FUNCIONAL**
+¿Necesitas ayuda?
 
-El sistema ha sido probado exhaustivamente y está listo para:
-- ✅ Monitoreo en tiempo real de ganado
-- ✅ Generación y gestión de alertas
-- ✅ Visualización geográfica precisa
-- ✅ Gestión de múltiples geocercas
-- ✅ Panel de administración completo
-
-**Ver [REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md) para detalles de las pruebas**
+1. 📖 Lee [INICIO-RAPIDO.md](INICIO-RAPIDO.md)
+2. 🔍 Ejecuta `python utils/diagnostico_sistema.py`
+3. 📋 Revisa [ESTRUCTURA-PROYECTO.md](ESTRUCTURA-PROYECTO.md)
+4. 🐛 Abre un issue en GitHub
 
 ---
 
-**Última actualización:** Noviembre 2025  
-**Versión:** 8.0
+<p align="center">
+  <b>¿Listo para empezar?</b><br>
+  Sigue la <a href="#-instalación-inicial">Guía de Instalación</a> y en 5 minutos tendrás el sistema funcionando 🚀
+</p>
+
+---
+
+**Última actualización:** Noviembre 2025 | **Versión:** 8.0
