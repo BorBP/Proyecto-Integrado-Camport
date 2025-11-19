@@ -240,3 +240,42 @@
   border: none;
   border-top: 1px solid #eee;
 }
+
+/* Selector de Vista */
+.view-selector {
+  display: flex;
+  gap: 5px;
+  background: #f5f5f5;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.view-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.view-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.view-btn.active {
+  background: white;
+  color: #2196f3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Vista de Alertas */
+.alertas-view {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+}
+

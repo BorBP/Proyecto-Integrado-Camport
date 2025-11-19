@@ -4,9 +4,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from .models import User, Animal, Telemetria, Geocerca, Alerta, AlertaUsuario
+from django.http import HttpResponse
+from .models import User, Animal, Telemetria, Geocerca, Alerta, AlertaUsuario, Reporte
 from .serializers import (UserSerializer, AnimalSerializer, TelemetriaSerializer,
-                          GeocercaSerializer, AlertaSerializer, AlertaUsuarioSerializer)
+                          GeocercaSerializer, AlertaSerializer, AlertaUsuarioSerializer, ReporteSerializer)
+import csv
+import io
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -97,13 +100,39 @@ class AlertaViewSet(viewsets.ModelViewSet):
         if resuelta is not None:
             queryset = queryset.filter(resuelta=resuelta.lower() == 'true')
         return queryset
+    
+    @action(detail=True, methods=['post'])
+    def resolver(self, request, pk=None):
+        """Marca una alerta como resuelta y la mueve a reportes"""
+        alerta = self.get_object()
+        alerta.resuelta = True
+        alerta.fecha_resolucion = timezone.now()
+        alerta.save()
+        
+        # Crear reporte si no existe
+        if not hasattr(alerta, 'reporte'):
+            Reporte.objects.create(
+                alerta=alerta,
+                generado_por=request.user,
+                observaciones=request.data.get('observaciones', '')
+            )
+        
+        serializer = self.get_serializer(alerta)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def activas(self, request):
+        """Obtiene solo las alertas activas (no resueltas)"""
+        alertas = self.get_queryset().filter(resuelta=False)
+        serializer = self.get_serializer(alertas, many=True)
+        return Response(serializer.data)
 
 class AlertaUsuarioViewSet(viewsets.ModelViewSet):
     serializer_class = AlertaUsuarioSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return AlertaUsuario.objects.filter(usuario=self.request.user)
+        return AlertaUsuario.objects.filter(usuario=self.request.user, eliminada=False)
 
     @action(detail=True, methods=['post'])
     def marcar_leido(self, request, pk=None):
@@ -119,6 +148,167 @@ class AlertaUsuarioViewSet(viewsets.ModelViewSet):
         no_leidas = self.get_queryset().filter(leido=False)
         serializer = self.get_serializer(no_leidas, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def eliminar(self, request, pk=None):
+        """Elimina una alerta (marca como eliminada sin borrar el registro)"""
+        alerta_usuario = self.get_object()
+        alerta_usuario.eliminada = True
+        alerta_usuario.save()
+        return Response({'status': 'Alerta eliminada'})
+    
+    @action(detail=True, methods=['post'])
+    def resolver_y_reportar(self, request, pk=None):
+        """Marca la alerta como leída, resuelta y la mueve a reportes"""
+        alerta_usuario = self.get_object()
+        alerta_usuario.leido = True
+        alerta_usuario.fecha_lectura = timezone.now()
+        alerta_usuario.save()
+        
+        # Resolver la alerta
+        alerta = alerta_usuario.alerta
+        alerta.resuelta = True
+        alerta.fecha_resolucion = timezone.now()
+        alerta.save()
+        
+        # Crear reporte si no existe
+        if not hasattr(alerta, 'reporte'):
+            Reporte.objects.create(
+                alerta=alerta,
+                generado_por=request.user,
+                observaciones=request.data.get('observaciones', '')
+            )
+        
+        return Response({'status': 'Alerta resuelta y enviada a reportes'})
+
+class ReporteViewSet(viewsets.ModelViewSet):
+    serializer_class = ReporteSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Reporte.objects.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(generado_por=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def exportar_csv(self, request):
+        """Exporta todos los reportes en formato CSV"""
+        reportes = Reporte.objects.all().select_related('alerta', 'alerta__animal', 'generado_por')
+        
+        # Crear archivo CSV en memoria
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Encabezados
+        writer.writerow([
+            'ID Reporte',
+            'Collar ID',
+            'Display ID',
+            'Tipo Animal',
+            'Tipo Alerta',
+            'Mensaje',
+            'Valor Registrado',
+            'Fecha Alerta',
+            'Fecha Resolución',
+            'Fecha Generación',
+            'Generado Por',
+            'Observaciones',
+            'Exportado'
+        ])
+        
+        # Datos
+        for reporte in reportes:
+            writer.writerow([
+                reporte.id,
+                reporte.alerta.animal.collar_id,
+                reporte.alerta.animal.display_id or '',
+                reporte.alerta.animal.tipo_animal,
+                reporte.alerta.tipo_alerta,
+                reporte.alerta.mensaje,
+                reporte.alerta.valor_registrado if reporte.alerta.valor_registrado else '',
+                reporte.alerta.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                reporte.alerta.fecha_resolucion.strftime('%Y-%m-%d %H:%M:%S') if reporte.alerta.fecha_resolucion else '',
+                reporte.fecha_generacion.strftime('%Y-%m-%d %H:%M:%S'),
+                reporte.generado_por.username if reporte.generado_por else '',
+                reporte.observaciones or '',
+                'Sí' if reporte.exportado else 'No'
+            ])
+        
+        # Marcar reportes como exportados
+        reportes.update(exportado=True, fecha_exportacion=timezone.now())
+        
+        # Crear respuesta HTTP
+        output.seek(0)
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="reportes_camport_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        return response
+    
+    @action(detail=False, methods=['post'])
+    def exportar_csv_filtrado(self, request):
+        """Exporta reportes filtrados en formato CSV"""
+        # Filtros opcionales
+        fecha_desde = request.data.get('fecha_desde')
+        fecha_hasta = request.data.get('fecha_hasta')
+        tipo_alerta = request.data.get('tipo_alerta')
+        animal_id = request.data.get('animal_id')
+        
+        reportes = Reporte.objects.all().select_related('alerta', 'alerta__animal', 'generado_por')
+        
+        if fecha_desde:
+            reportes = reportes.filter(fecha_generacion__gte=fecha_desde)
+        if fecha_hasta:
+            reportes = reportes.filter(fecha_generacion__lte=fecha_hasta)
+        if tipo_alerta:
+            reportes = reportes.filter(alerta__tipo_alerta=tipo_alerta)
+        if animal_id:
+            reportes = reportes.filter(alerta__animal__collar_id=animal_id)
+        
+        # Crear archivo CSV en memoria
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Encabezados
+        writer.writerow([
+            'ID Reporte',
+            'Collar ID',
+            'Display ID',
+            'Tipo Animal',
+            'Tipo Alerta',
+            'Mensaje',
+            'Valor Registrado',
+            'Fecha Alerta',
+            'Fecha Resolución',
+            'Fecha Generación',
+            'Generado Por',
+            'Observaciones',
+            'Exportado'
+        ])
+        
+        # Datos
+        for reporte in reportes:
+            writer.writerow([
+                reporte.id,
+                reporte.alerta.animal.collar_id,
+                reporte.alerta.animal.display_id or '',
+                reporte.alerta.animal.tipo_animal,
+                reporte.alerta.tipo_alerta,
+                reporte.alerta.mensaje,
+                reporte.alerta.valor_registrado if reporte.alerta.valor_registrado else '',
+                reporte.alerta.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                reporte.alerta.fecha_resolucion.strftime('%Y-%m-%d %H:%M:%S') if reporte.alerta.fecha_resolucion else '',
+                reporte.fecha_generacion.strftime('%Y-%m-%d %H:%M:%S'),
+                reporte.generado_por.username if reporte.generado_por else '',
+                reporte.observaciones or '',
+                'Sí' if reporte.exportado else 'No'
+            ])
+        
+        # Marcar reportes como exportados
+        reportes.update(exportado=True, fecha_exportacion=timezone.now())
+        
+        # Crear respuesta HTTP
+        output.seek(0)
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="reportes_camport_filtrado_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        return response
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

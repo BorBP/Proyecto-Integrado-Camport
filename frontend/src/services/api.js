@@ -108,6 +108,53 @@ export const alertaService = {
     const response = await api.post(`/alertas-usuario/${id}/marcar_leido/`);
     return response.data;
   },
+  
+  eliminar: async (id) => {
+    const response = await api.post(`/alertas-usuario/${id}/eliminar/`);
+    return response.data;
+  },
+  
+  resolverYReportar: async (id, observaciones = '') => {
+    const response = await api.post(`/alertas-usuario/${id}/resolver_y_reportar/`, { observaciones });
+    return response.data;
+  },
+};
+
+export const reporteService = {
+  getAll: async () => {
+    const response = await api.get('/reportes/');
+    return response.data;
+  },
+  
+  exportarCSV: async () => {
+    const response = await api.get('/reportes/exportar_csv/', {
+      responseType: 'blob',
+    });
+    // Crear descarga automática
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `reportes_camport_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return response.data;
+  },
+  
+  exportarCSVFiltrado: async (filtros) => {
+    const response = await api.post('/reportes/exportar_csv_filtrado/', filtros, {
+      responseType: 'blob',
+    });
+    // Crear descarga automática
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `reportes_camport_filtrado_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return response.data;
+  },
 };
 
 export const userService = {

@@ -103,6 +103,8 @@ class Alerta(models.Model):
     mensaje = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     resuelta = models.BooleanField(default=False)
+    fecha_resolucion = models.DateTimeField(null=True, blank=True)
+    valor_registrado = models.FloatField(null=True, blank=True)  # Valor que disparó la alerta
     
     class Meta:
         ordering = ['-timestamp']
@@ -116,9 +118,25 @@ class AlertaUsuario(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='alertas_recibidas')
     leido = models.BooleanField(default=False)
     fecha_lectura = models.DateTimeField(null=True, blank=True)
+    eliminada = models.BooleanField(default=False)  # Para eliminar sin perder el registro
 
     class Meta:
         unique_together = ('alerta', 'usuario')
 
     def __str__(self):
         return f"Alerta {self.alerta.id} para {self.usuario.username}"
+
+# 7. Modelo de Reportes (Historial de Alertas Resueltas)
+class Reporte(models.Model):
+    alerta = models.OneToOneField(Alerta, on_delete=models.CASCADE, related_name='reporte')
+    generado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='reportes_generados')
+    fecha_generacion = models.DateTimeField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
+    exportado = models.BooleanField(default=False)
+    fecha_exportacion = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-fecha_generacion']
+    
+    def __str__(self):
+        return f"Reporte {self.id} - {self.alerta.tipo_alerta}"

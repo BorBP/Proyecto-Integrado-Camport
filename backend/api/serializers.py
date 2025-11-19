@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Animal, Telemetria, Geocerca, Alerta, AlertaUsuario
+from .models import User, Animal, Telemetria, Geocerca, Alerta, AlertaUsuario, Reporte
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
@@ -61,12 +61,13 @@ class GeocercaSerializer(serializers.ModelSerializer):
 
 class AlertaSerializer(serializers.ModelSerializer):
     animal_collar = serializers.CharField(source='animal.collar_id', read_only=True)
+    animal_display_id = serializers.CharField(source='animal.display_id', read_only=True)
     animal_tipo = serializers.CharField(source='animal.tipo_animal', read_only=True)
     
     class Meta:
         model = Alerta
-        fields = ['id', 'animal', 'animal_collar', 'animal_tipo', 
-                  'tipo_alerta', 'mensaje', 'timestamp', 'resuelta']
+        fields = ['id', 'animal', 'animal_collar', 'animal_display_id', 'animal_tipo', 
+                  'tipo_alerta', 'mensaje', 'timestamp', 'resuelta', 'fecha_resolucion', 'valor_registrado']
         read_only_fields = ['timestamp']
 
 class AlertaUsuarioSerializer(serializers.ModelSerializer):
@@ -76,5 +77,15 @@ class AlertaUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlertaUsuario
         fields = ['id', 'alerta', 'alerta_detalle', 'usuario', 
-                  'usuario_username', 'leido', 'fecha_lectura']
+                  'usuario_username', 'leido', 'fecha_lectura', 'eliminada']
         read_only_fields = ['fecha_lectura']
+
+class ReporteSerializer(serializers.ModelSerializer):
+    alerta_detalle = AlertaSerializer(source='alerta', read_only=True)
+    generado_por_username = serializers.CharField(source='generado_por.username', read_only=True)
+    
+    class Meta:
+        model = Reporte
+        fields = ['id', 'alerta', 'alerta_detalle', 'generado_por', 'generado_por_username',
+                  'fecha_generacion', 'observaciones', 'exportado', 'fecha_exportacion']
+        read_only_fields = ['fecha_generacion', 'generado_por']

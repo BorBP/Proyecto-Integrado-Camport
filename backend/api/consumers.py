@@ -154,7 +154,8 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='TEMPERATURA',
-                        mensaje=f'Fiebre detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
+                        mensaje=f'Fiebre detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})',
+                        valor_registrado=temp
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
@@ -177,7 +178,8 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='TEMPERATURA',
-                        mensaje=f'Hipotermia detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
+                        mensaje=f'Hipotermia detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})',
+                        valor_registrado=temp
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
@@ -206,7 +208,8 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='FRECUENCIA',
-                        mensaje=f'Frecuencia cardíaca alta: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
+                        mensaje=f'Frecuencia cardíaca alta: {fc} lpm (Animal: {animal.display_id or animal.collar_id})',
+                        valor_registrado=fc
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
@@ -229,7 +232,8 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='FRECUENCIA',
-                        mensaje=f'Frecuencia cardíaca baja: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
+                        mensaje=f'Frecuencia cardíaca baja: {fc} lpm (Animal: {animal.display_id or animal.collar_id})',
+                        valor_registrado=fc
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
