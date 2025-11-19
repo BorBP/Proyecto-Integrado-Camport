@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Polygon, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { geocercaService } from '../../services/api';
+import { geocercaService, animalService } from '../../services/api';
 import './GeofenceEditor.css';
 
 // Fix para los iconos de Leaflet
@@ -15,6 +15,8 @@ L.Icon.Default.mergeOptions({
 const GeofenceEditor = () => {
   const [geocercas, setGeocercas] = useState([]);
   const [selectedGeofence, setSelectedGeofence] = useState(null);
+  const [editingCoords, setEditingCoords] = useState(null); // Coordenadas temporales mientras se edita
+  const [hasChanges, setHasChanges] = useState(false); // Indica si hay cambios sin guardar
   const [editingVertex, setEditingVertex] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newCoord, setNewCoord] = useState(null);
@@ -27,12 +29,21 @@ const GeofenceEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    // Sincronizar las coordenadas de edición cuando cambia la geocerca seleccionada
+    if (selectedGeofence) {
+      setEditingCoords(selectedGeofence.coordenadas);
+      setHasChanges(false);
+    }
+  }, [selectedGeofence]);
+
   const loadGeocercas = async () => {
     try {
       const data = await geocercaService.getAll();
       setGeocercas(data);
       if (data.length > 0 && !selectedGeofence) {
         setSelectedGeofence(data[0]);
+        setEditingCoords(data[0].coordenadas);
       }
     } catch (error) {
       console.error('Error loading geocercas:', error);
@@ -43,6 +54,51 @@ const GeofenceEditor = () => {
     setEditingVertex(index);
     setShowModal(true);
     setNewCoord(null);
+  };
+
+  const handleVertexDrag = (index, newPosition) => {
+    const updatedCoords = [...editingCoords];
+    updatedCoords[index] = { lat: newPosition.lat, lng: newPosition.lng };
+    setEditingCoords(updatedCoords);
+    setHasChanges(true);
+  };
+
+  const handleApplyChanges = async () => {
+    if (!hasChanges || !editingCoords) {
+      setMessage('No hay cambios para aplicar');
+      return;
+    }
+
+    try {
+      setMessage('Aplicando cambios y reposicionando animales...');
+      
+      // Actualizar geocerca en el backend
+      await geocercaService.update(selectedGeofence.id, {
+        ...selectedGeofence,
+        coordenadas: editingCoords
+      });
+
+      // Recargar geocercas
+      await loadGeocercas();
+      
+      setHasChanges(false);
+      setMessage('✓ Geocerca actualizada. Los animales se reposicionarán automáticamente.');
+      
+      // Limpiar mensaje después de 5 segundos
+      setTimeout(() => setMessage(''), 5000);
+    } catch (error) {
+      setMessage('❌ Error al actualizar la geocerca');
+      console.error(error);
+    }
+  };
+
+  const handleCancelChanges = () => {
+    if (selectedGeofence) {
+      setEditingCoords(selectedGeofence.coordenadas);
+      setHasChanges(false);
+      setMessage('Cambios descartados');
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   const handleMapClick = (latlng) => {
@@ -195,10 +251,36 @@ const GeofenceEditor = () => {
           </div>
         </div>
 
-        {selectedGeofence && (
+        {selectedGeofence && editingCoords && (
           <div className="geofence-editor">
             <h3>Editando: {selectedGeofence.nombre}</h3>
-            <p className="info">Haga clic en un vértice (punto) del polígono para editarlo</p>
+            <p className="info">
+              ⚡ Arrastra los marcadores (puntos rojos) para editar la geocerca. 
+              Luego presiona "Aplicar Cambios" para guardar.
+            </p>
+            
+            {hasChanges && (
+              <div className="changes-warning">
+                ⚠️ Hay cambios sin guardar. Los animales se reposicionarán al aplicar cambios.
+              </div>
+            )}
+            
+            <div className="editor-actions">
+              <button 
+                onClick={handleApplyChanges} 
+                className="btn-apply-changes"
+                disabled={!hasChanges}
+              >
+                ✓ Aplicar Cambios y Actualizar Animales
+              </button>
+              <button 
+                onClick={handleCancelChanges} 
+                className="btn-cancel-changes"
+                disabled={!hasChanges}
+              >
+                ✕ Descartar Cambios
+              </button>
+            </div>
             
             <div className="map-editor">
               <MapContainer 
@@ -210,42 +292,62 @@ const GeofenceEditor = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 
+                {/* Polígono con coordenadas temporales */}
                 <Polygon
-                  positions={selectedGeofence.coordenadas.map(c => [c.lat, c.lng])}
-                  pathOptions={{ color: 'blue', fillOpacity: 0.2 }}
+                  positions={editingCoords.map(c => [c.lat, c.lng])}
+                  pathOptions={{ 
+                    color: hasChanges ? 'orange' : 'blue', 
+                    fillOpacity: 0.2,
+                    weight: hasChanges ? 3 : 2
+                  }}
                 />
 
-                {selectedGeofence.coordenadas.map((coord, index) => (
-                  <Marker
-                    key={index}
-                    position={[coord.lat, coord.lng]}
-                    eventHandlers={{
-                      click: () => handleVertexClick(index)
-                    }}
-                  >
-                    <Popup>
-                      Vértice {index + 1}<br/>
-                      Lat: {coord.lat.toFixed(4)}<br/>
-                      Lng: {coord.lng.toFixed(4)}<br/>
-                      <button onClick={() => handleVertexClick(index)}>Editar</button>
-                    </Popup>
-                  </Marker>
-                ))}
+                {/* Marcadores arrastrables */}
+                {editingCoords.map((coord, index) => {
+                  // Crear un icono personalizado para los vértices
+                  const vertexIcon = new L.Icon({
+                    iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="8" fill="red" stroke="white" stroke-width="2"/>
+                        <text x="10" y="14" text-anchor="middle" fill="white" font-size="10" font-weight="bold">${index + 1}</text>
+                      </svg>
+                    `),
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10],
+                  });
+
+                  return (
+                    <Marker
+                      key={index}
+                      position={[coord.lat, coord.lng]}
+                      draggable={true}
+                      icon={vertexIcon}
+                      eventHandlers={{
+                        dragend: (e) => {
+                          const newPos = e.target.getLatLng();
+                          handleVertexDrag(index, newPos);
+                        }
+                      }}
+                    >
+                      <Popup>
+                        Vértice {index + 1}<br/>
+                        Lat: {coord.lat.toFixed(6)}<br/>
+                        Lng: {coord.lng.toFixed(6)}<br/>
+                        <small>Arrastra para mover</small>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
               </MapContainer>
             </div>
 
             <div className="coords-list">
               <h4>Coordenadas del Perímetro:</h4>
-              {selectedGeofence.coordenadas.map((coord, index) => (
+              {editingCoords.map((coord, index) => (
                 <div key={index} className="coord-item">
                   <span>Punto {index + 1}:</span>
-                  <span>Lat: {coord.lat.toFixed(4)}, Lng: {coord.lng.toFixed(4)}</span>
-                  <button 
-                    onClick={() => handleVertexClick(index)}
-                    className="btn-edit-vertex"
-                  >
-                    ✏️ Editar
-                  </button>
+                  <span>Lat: {coord.lat.toFixed(6)}, Lng: {coord.lng.toFixed(6)}</span>
+                  {hasChanges && <span className="modified-badge">modificado</span>}
                 </div>
               ))}
             </div>

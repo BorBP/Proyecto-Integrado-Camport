@@ -117,15 +117,18 @@ class VitalSignsManager:
         }
         target = normal_ranges.get(tipo_animal, 38.5)
         
-        # NUEVO: Posibilidad aleatoria de generar anomalía (para variar alertas)
-        if allow_anomalies and random.random() < 0.05:  # 5% de probabilidad
-            # Decidir si sube o baja
-            if random.random() < 0.7:  # 70% fiebre, 30% hipotermia
+        # NUEVO: Posibilidad aleatoria de generar anomalía (para variar alertas entre animales)
+        # Hash del collar_id para distribuir anomalías de forma más equitativa
+        hash_val = int(hashlib.md5(collar_id.encode()).hexdigest(), 16) % 100
+        
+        if allow_anomalies and random.random() < 0.08:  # 8% de probabilidad
+            # Usar hash para variar el tipo de anomalía por animal
+            if hash_val % 2 == 0:  # 50% de animales tienden a fiebre
                 # Empujar hacia fiebre (>40°C)
-                delta += 0.5
+                delta += random.uniform(0.4, 0.7)
             else:
                 # Empujar hacia hipotermia (<37.5°C)
-                delta -= 0.5
+                delta -= random.uniform(0.4, 0.7)
         # Si está lejos del target, empujar suavemente hacia él
         elif abs(current - target) > 1.5:
             direction = 1 if current < target else -1
@@ -167,15 +170,19 @@ class VitalSignsManager:
         }
         target = normal_ranges.get(tipo_animal, 70)
         
-        # NUEVO: Posibilidad aleatoria de generar anomalía (para variar alertas)
-        if allow_anomalies and random.random() < 0.05:  # 5% de probabilidad
-            # Decidir si sube o baja
-            if random.random() < 0.6:  # 60% agitación, 40% bajo estímulo
+        # NUEVO: Posibilidad aleatoria de generar anomalía (para variar alertas entre animales)
+        # Hash del collar_id para distribuir anomalías de forma más equitativa
+        hash_val = int(hashlib.md5(collar_id.encode()).hexdigest(), 16) % 100
+        
+        if allow_anomalies and random.random() < 0.08:  # 8% de probabilidad
+            # Usar hash para variar el tipo de anomalía por animal
+            if hash_val % 3 == 0:  # 33% de animales tienden a agitación
                 # Empujar hacia agitación (>120 BPM para ovino/bovino, >50 para equino)
-                delta += 10
-            else:
+                delta += random.randint(12, 18)
+            elif hash_val % 3 == 1:  # 33% de animales tienden a bajo estímulo
                 # Empujar hacia bajo estímulo (<40 BPM)
-                delta -= 10
+                delta -= random.randint(12, 18)
+            # Resto 33% se mantienen normales
         # Si está lejos del target, empujar hacia él
         elif abs(current - target) > 20:
             direction = 1 if current < target else -1

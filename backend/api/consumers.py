@@ -9,14 +9,17 @@ import time
 
 
 class TelemetriaConsumer(AsyncWebsocketConsumer):
-    # Sistema de cooldown para alertas (diccionario compartido entre instancias)
+    # Sistema de cooldown para alertas (diccionario compartido entre instancias a nivel de clase)
     alert_cooldowns = {}
-    COOLDOWN_BASE = 90  # 90 segundos (1:30 min) - base para todas las alertas
     
-    # Desfase entre tipos de alertas para evitar spam simultáneo
-    OFFSET_TEMPERATURE = 0   # Temperatura: sin desfase
-    OFFSET_BPM = 30          # BPM: 30 segundos después de temperatura
-    OFFSET_PERIMETER = 60    # Perímetro: 60 segundos después de temperatura
+    # Configuración de tiempos
+    COOLDOWN_VITALS = 90  # 90 segundos (1:30 min) para temperatura y BPM
+    COOLDOWN_PERIMETER = 30  # 30 segundos para alertas de perímetro
+    
+    # Desfase entre tipos de alertas para distribuir temporalmente
+    OFFSET_TEMPERATURE = 0   # Temperatura: sin desfase (t=0s)
+    OFFSET_BPM = 30          # BPM: 30 segundos después (t=30s)
+    OFFSET_PERIMETER = 60    # Perímetro: 60 segundos después (t=60s)
 
     async def connect(self):
         """Conecta el WebSocket"""
@@ -98,56 +101,38 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             'timestamp': telemetria.timestamp.isoformat()
         }
 
-    def can_send_alert(self, collar_id, alert_type, offset_seconds=0):
+    def can_send_alert(self, collar_id, alert_category, cooldown_seconds):
         """
-        Verifica si se puede enviar una alerta basándose en el cooldown y offset.
+        Verifica si se puede enviar una alerta basándose en el cooldown.
         
         Args:
             collar_id: ID del collar del animal
-            alert_type: Tipo de alerta (TEMPERATURA_ALTA, FRECUENCIA_BAJA, etc.)
-            offset_seconds: Desfase inicial para este tipo de alerta
+            alert_category: Categoría de alerta ('temp', 'bpm', 'perimeter')
+            cooldown_seconds: Tiempo de cooldown en segundos
         
         Returns:
             bool: True si puede enviar la alerta, False si está en cooldown
         """
         now = time.time()
-        key = f"{collar_id}_{alert_type}"
+        key = f"{collar_id}_{alert_category}"
 
         if key in self.alert_cooldowns:
             last_alert_time = self.alert_cooldowns[key]
             time_diff = now - last_alert_time
-            
-            # El cooldown efectivo incluye el offset
-            cooldown_total = self.COOLDOWN_BASE + offset_seconds
 
-            if time_diff < cooldown_total:
-                remaining = int(cooldown_total - time_diff)
-                print(f"⏱️  Cooldown activo para {collar_id} - {alert_type}: {remaining}s restantes")
+            if time_diff < cooldown_seconds:
+                remaining = int(cooldown_seconds - time_diff)
+                print(f"⏱️  Cooldown activo para {collar_id} - {alert_category}: {remaining}s restantes")
                 return False
-        else:
-            # Primera vez que se intenta enviar esta alerta
-            # Aplicar el offset inicial
-            if offset_seconds > 0:
-                # Verificar si ya pasó el offset desde el inicio del sistema
-                init_key = f"_init_{alert_type}"
-                if init_key not in self.alert_cooldowns:
-                    self.alert_cooldowns[init_key] = now
-                    print(f"⏲️  Offset inicial de {offset_seconds}s para tipo {alert_type}")
-                    return False
-                
-                init_time = self.alert_cooldowns[init_key]
-                if (now - init_time) < offset_seconds:
-                    remaining = int(offset_seconds - (now - init_time))
-                    print(f"⏲️  Esperando offset inicial para {alert_type}: {remaining}s restantes")
-                    return False
 
         # Actualizar timestamp de última alerta
         self.alert_cooldowns[key] = now
+        print(f"✅ Alerta permitida para {collar_id} - {alert_category}")
         return True
 
     @database_sync_to_async
     def check_alerts(self, telemetria_data):
-        """Verifica si se deben generar alertas - CON COOLDOWN"""
+        """Verifica si se deben generar alertas - CON COOLDOWN Y VARIACIÓN DE ANIMALES"""
         from django.contrib.auth import get_user_model
         User = get_user_model()
         
@@ -165,13 +150,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             temp = telemetria_data['temperatura_corporal']
 
             if temp > 40:
-                if self.can_send_alert(animal.collar_id, 'TEMPERATURA_ALTA', self.OFFSET_TEMPERATURE):
+                if self.can_send_alert(animal.collar_id, 'temp', self.COOLDOWN_VITALS):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='TEMPERATURA',
                         mensaje=f'Fiebre detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
                     )
-                    # Crear alertas para todos los usuarios DENTRO DE ESTA FUNCIÓN
+                    # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
@@ -179,7 +164,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"🌡️🔥 ALERTA CREADA EN BD: {alerta.mensaje}")
+                    print(f"🌡️🔥 ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C")
                     alertas.append({
                         'tipo': 'TEMPERATURA',
                         'subtipo': 'FIEBRE',
@@ -188,13 +173,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                         'collar_id': animal.collar_id
                     })
             elif temp < 37.5:
-                if self.can_send_alert(animal.collar_id, 'TEMPERATURA_BAJA', self.OFFSET_TEMPERATURE):
+                if self.can_send_alert(animal.collar_id, 'temp', self.COOLDOWN_VITALS):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='TEMPERATURA',
                         mensaje=f'Hipotermia detectada: {temp}°C (Animal: {animal.display_id or animal.collar_id})'
                     )
-                    # Crear alertas para todos los usuarios DENTRO DE ESTA FUNCIÓN
+                    # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
@@ -202,7 +187,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"🌡️❄️ ALERTA CREADA EN BD: {alerta.mensaje}")
+                    print(f"🌡️❄️ ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C")
                     alertas.append({
                         'tipo': 'TEMPERATURA',
                         'subtipo': 'HIPOTERMIA',
@@ -217,13 +202,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             fc = telemetria_data['frecuencia_cardiaca']
 
             if fc > 120:
-                if self.can_send_alert(animal.collar_id, 'FRECUENCIA_ALTA', self.OFFSET_BPM):
+                if self.can_send_alert(animal.collar_id, 'bpm', self.COOLDOWN_VITALS):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='FRECUENCIA',
                         mensaje=f'Frecuencia cardíaca alta: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
                     )
-                    # Crear alertas para todos los usuarios DENTRO DE ESTA FUNCIÓN
+                    # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
@@ -231,7 +216,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"❤️⬆️ ALERTA CREADA EN BD: {alerta.mensaje}")
+                    print(f"❤️⬆️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc}")
                     alertas.append({
                         'tipo': 'FRECUENCIA',
                         'subtipo': 'AGITACION',
@@ -240,13 +225,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                         'collar_id': animal.collar_id
                     })
             elif fc < 40:
-                if self.can_send_alert(animal.collar_id, 'FRECUENCIA_BAJA', self.OFFSET_BPM):
+                if self.can_send_alert(animal.collar_id, 'bpm', self.COOLDOWN_VITALS):
                     alerta = Alerta.objects.create(
                         animal=animal,
                         tipo_alerta='FRECUENCIA',
                         mensaje=f'Frecuencia cardíaca baja: {fc} lpm (Animal: {animal.display_id or animal.collar_id})'
                     )
-                    # Crear alertas para todos los usuarios DENTRO DE ESTA FUNCIÓN
+                    # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
@@ -254,7 +239,7 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"❤️⬇️ ALERTA CREADA EN BD: {alerta.mensaje}")
+                    print(f"❤️⬇️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc}")
                     alertas.append({
                         'tipo': 'FRECUENCIA',
                         'subtipo': 'BAJO_ESTIMULO',
@@ -276,13 +261,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                 point = Point(telemetria_data['longitud'], telemetria_data['latitud'])
 
                 if not polygon.contains(point):
-                    if self.can_send_alert(animal.collar_id, 'PERIMETRO', self.OFFSET_PERIMETER):
+                    if self.can_send_alert(animal.collar_id, 'perimeter', self.COOLDOWN_PERIMETER):
                         alerta = Alerta.objects.create(
                             animal=animal,
                             tipo_alerta='PERIMETRO',
                             mensaje=f'Animal {animal.display_id or animal.collar_id} fuera de geocerca "{geocerca.nombre}"'
                         )
-                        # Crear alertas para todos los usuarios DENTRO DE ESTA FUNCIÓN
+                        # Crear alertas para todos los usuarios
                         usuarios = User.objects.all()
                         for usuario in usuarios:
                             AlertaUsuario.objects.create(
