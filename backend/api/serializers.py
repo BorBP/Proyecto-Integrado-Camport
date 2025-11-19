@@ -30,12 +30,35 @@ class UserSerializer(serializers.ModelSerializer):
 class AnimalSerializer(serializers.ModelSerializer):
     agregado_por_username = serializers.CharField(source='agregado_por.username', read_only=True)
     geocerca_nombre = serializers.CharField(source='geocerca.nombre', read_only=True)
+    # Campos de telemetría más reciente
+    latitud = serializers.SerializerMethodField()
+    longitud = serializers.SerializerMethodField()
+    temperatura_corporal = serializers.SerializerMethodField()
+    frecuencia_cardiaca = serializers.SerializerMethodField()
     
     class Meta:
         model = Animal
         fields = ['collar_id', 'display_id', 'tipo_animal', 'raza', 'edad', 'peso_kg', 
-                  'sexo', 'color', 'geocerca', 'geocerca_nombre', 'agregado_por', 'agregado_por_username']
-        read_only_fields = ['agregado_por', 'display_id']
+                  'sexo', 'color', 'geocerca', 'geocerca_nombre', 'agregado_por', 'agregado_por_username',
+                  'latitud', 'longitud', 'temperatura_corporal', 'frecuencia_cardiaca']
+        read_only_fields = ['agregado_por', 'display_id', 'latitud', 'longitud', 
+                           'temperatura_corporal', 'frecuencia_cardiaca']
+    
+    def get_latitud(self, obj):
+        ultima_telemetria = obj.telemetria.first()
+        return ultima_telemetria.latitud if ultima_telemetria else None
+    
+    def get_longitud(self, obj):
+        ultima_telemetria = obj.telemetria.first()
+        return ultima_telemetria.longitud if ultima_telemetria else None
+    
+    def get_temperatura_corporal(self, obj):
+        ultima_telemetria = obj.telemetria.first()
+        return ultima_telemetria.temperatura_corporal if ultima_telemetria else None
+    
+    def get_frecuencia_cardiaca(self, obj):
+        ultima_telemetria = obj.telemetria.first()
+        return ultima_telemetria.frecuencia_cardiaca if ultima_telemetria else None
 
 class TelemetriaSerializer(serializers.ModelSerializer):
     animal_tipo = serializers.CharField(source='animal.tipo_animal', read_only=True)

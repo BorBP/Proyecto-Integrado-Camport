@@ -269,28 +269,28 @@ class Command(BaseCommand):
         self.alert_cooldown_perimeter = options['alert_cooldown_perimeter']
 
         self.stdout.write(self.style.SUCCESS('=' * 95))
-        self.stdout.write(self.style.SUCCESS('🏥 CAMPORT V8.0 - SIGNOS VITALES REALISTAS CON INTERVALOS INDEPENDIENTES 🏥'))
+        self.stdout.write(self.style.SUCCESS('CAMPORT V8.0 - SIGNOS VITALES REALISTAS CON INTERVALOS INDEPENDIENTES'))
         self.stdout.write(self.style.SUCCESS('=' * 95))
-        self.stdout.write(self.style.SUCCESS('\n📊 INTERVALOS INDEPENDIENTES:'))
-        self.stdout.write(f'   🚶 Movimiento: {self.interval_movement}s')
-        self.stdout.write(f'   🌡️  Temperatura: {self.interval_temperature}s')
-        self.stdout.write(f'   ❤️  Frecuencia cardíaca (BPM): {self.interval_bpm}s')
+        self.stdout.write(self.style.SUCCESS('\nINTERVALOS INDEPENDIENTES:'))
+        self.stdout.write(f'   Movimiento: {self.interval_movement}s')
+        self.stdout.write(f'   Temperatura: {self.interval_temperature}s')
+        self.stdout.write(f'   Frecuencia cardiaca (BPM): {self.interval_bpm}s')
         
-        self.stdout.write(self.style.SUCCESS('\n⚕️  SISTEMA DE ALERTAS INTELIGENTES:'))
-        self.stdout.write(f'   ✅ Solo para animales con geocerca asignada')
-        self.stdout.write(f'   🔔 Cooldown alertas vitales (Temp/BPM): {self.alert_cooldown_vitals}s')
-        self.stdout.write(f'   🔔 Cooldown alertas perímetro: {self.alert_cooldown_perimeter}s')
-        self.stdout.write(f'   🌡️  Fiebre: >40°C | Hipotermia: <37.5°C')
-        self.stdout.write(f'   ❤️  Agitación: >100 BPM | Bajo estímulo: <50 BPM')
-        self.stdout.write(f'   🚨 Fuga: Fuera de perímetro')
+        self.stdout.write(self.style.SUCCESS('\nSISTEMA DE ALERTAS INTELIGENTES:'))
+        self.stdout.write(f'   Solo para animales con geocerca asignada')
+        self.stdout.write(f'   Cooldown alertas vitales (Temp/BPM): {self.alert_cooldown_vitals}s')
+        self.stdout.write(f'   Cooldown alertas perimetro: {self.alert_cooldown_perimeter}s')
+        self.stdout.write(f'   Fiebre: >40°C | Hipotermia: <37.5°C')
+        self.stdout.write(f'   Agitacion: >100 BPM | Bajo estimulo: <50 BPM')
+        self.stdout.write(f'   Fuga: Fuera de perimetro')
         
-        self.stdout.write(self.style.WARNING(f'\n🐑 Oveja negra: {self.black_sheep_id or "Selección automática"}'))
+        self.stdout.write(self.style.WARNING(f'\nOveja negra: {self.black_sheep_id or "Seleccion automatica"}'))
         self.stdout.write(self.style.SUCCESS('=' * 95 + '\n'))
 
         try:
             asyncio.run(self.run_simulation())
         except KeyboardInterrupt:
-            self.stdout.write(self.style.WARNING('\n⏹️  Simulación detenida'))
+            self.stdout.write(self.style.WARNING('\nSimulacion detenida'))
             self.stdout.write(self.style.SUCCESS('Gracias por usar CAMPORT V8.0\n'))
 
     async def run_simulation(self):
@@ -319,7 +319,9 @@ class Command(BaseCommand):
                     asyncio.create_task(self.movement_loop(), name='movement'),
                     asyncio.create_task(self.temperature_loop(), name='temperature'),
                     asyncio.create_task(self.bpm_loop(), name='bpm'),
-                    asyncio.create_task(self.stats_loop(), name='stats')
+                    asyncio.create_task(self.stats_loop(), name='stats'),
+                    asyncio.create_task(self.response_handler_loop(), name='response_handler'),
+                    asyncio.create_task(self.periodic_alert_check_loop(), name='periodic_alerts')  # NUEVO
                 ]
                 
                 # Ejecutar todos los tasks
@@ -525,6 +527,48 @@ class Command(BaseCommand):
             except Exception as e:
                 await asyncio.sleep(10)
 
+    async def response_handler_loop(self):
+        """Loop dedicado para manejar respuestas del WebSocket sin bloquear otros loops"""
+        while True:
+            try:
+                # Leer respuestas del WebSocket de forma continua
+                response = await asyncio.wait_for(self.websocket.recv(), timeout=1.0)
+                # Opcional: procesar respuesta si es necesario
+                # Por ahora solo la consumimos para evitar que se acumulen
+            except asyncio.TimeoutError:
+                # No hay respuesta, continuar
+                pass
+            except Exception as e:
+                # Error en WebSocket, esperar un poco
+                await asyncio.sleep(0.5)
+    
+    async def periodic_alert_check_loop(self):
+        """Loop periódico para verificar y forzar envío de telemetría (asegura actualizaciones)"""
+        await asyncio.sleep(5)  # Esperar un poco antes de iniciar
+        
+        while True:
+            try:
+                # Cada cierto tiempo, enviar telemetría de todos los animales
+                # Esto asegura que el frontend siempre tenga datos actualizados
+                animales_data = await self.get_animals_with_geofences()
+                
+                for animal_data in animales_data:
+                    collar_id = animal_data['collar_id']
+                    
+                    if collar_id in self.animal_positions:
+                        pos = self.animal_positions[collar_id]
+                        temp, bpm = self.vitals_manager.get_current_vitals(collar_id)
+                        
+                        if temp and bpm:
+                            await self.send_telemetry(collar_id, pos['lat'], pos['lng'], temp, bpm)
+                
+                # Esperar 15 segundos antes de la próxima verificación
+                await asyncio.sleep(15)
+                
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'Error en periodic_alert_check_loop: {e}'))
+                await asyncio.sleep(15)
+
     async def send_telemetry(self, collar_id, lat, lng, temp, bpm):
         """Envía telemetría al WebSocket"""
         try:
@@ -537,12 +581,7 @@ class Command(BaseCommand):
             }
             
             await self.websocket.send(json.dumps(telemetria))
-            
-            # Leer respuesta (no bloqueante)
-            try:
-                response = await asyncio.wait_for(self.websocket.recv(), timeout=0.1)
-            except asyncio.TimeoutError:
-                pass
+            # NO leer respuesta aquí - se maneja en response_handler_loop
                 
         except Exception as e:
             pass  # Silenciar errores de envío

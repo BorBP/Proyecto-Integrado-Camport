@@ -43,19 +43,24 @@ const UserDashboard = () => {
   };
 
   const updateAnimalData = (telemetriaData) => {
-    setAnimales(prevAnimales => 
-      prevAnimales.map(animal => 
-        animal.collar_id === telemetriaData.collar_id
-          ? {
-              ...animal,
-              latitud: telemetriaData.latitud,
-              longitud: telemetriaData.longitud,
-              temperatura_corporal: telemetriaData.temperatura_corporal,
-              frecuencia_cardiaca: telemetriaData.frecuencia_cardiaca,
-            }
-          : animal
-      )
-    );
+    console.log('📡 Telemetría recibida en frontend:', telemetriaData);
+    
+    setAnimales(prevAnimales => {
+      const updated = prevAnimales.map(animal => {
+        if (animal.collar_id === telemetriaData.collar_id) {
+          console.log(`✅ Actualizando ${animal.collar_id}: (${telemetriaData.latitud}, ${telemetriaData.longitud})`);
+          return {
+            ...animal,
+            latitud: telemetriaData.latitud,
+            longitud: telemetriaData.longitud,
+            temperatura_corporal: telemetriaData.temperatura_corporal,
+            frecuencia_cardiaca: telemetriaData.frecuencia_cardiaca,
+          };
+        }
+        return animal;
+      });
+      return updated;
+    });
   };
 
   return (

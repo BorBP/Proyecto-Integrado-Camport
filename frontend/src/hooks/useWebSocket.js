@@ -22,6 +22,7 @@ const useWebSocket = (url) => {
     ws.addEventListener('message', (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('📩 Mensaje WebSocket recibido:', data);
         setLastMessage(data);
       } catch (error) {
         console.error('Error parsing message:', error);

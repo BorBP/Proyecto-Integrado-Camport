@@ -1,218 +1,140 @@
-# 🐄 CAMPORT V8.0 - Sistema de Monitoreo de Ganado en Tiempo Real
+# 🐄 CAMPORT - Sistema de Monitoreo de Ganado en Tiempo Real
 
-**Versión:** V8.0 - Sistema Completo de Monitoreo Inteligente  
-**Estado:** ✅ VALIDADO - Producción Ready  
-**Fecha:** 19 de Noviembre de 2025
+**Versión:** 8.0  
+**Estado:** ✅ FUNCIONANDO  
+**Fecha:** Noviembre 2025
 
-Sistema fullstack completo para monitoreo de ganado con geolocalización en tiempo real, telemetría de signos vitales y sistema de alertas inteligentes.
+Sistema fullstack para monitoreo de ganado con geolocalización GPS, telemetría de signos vitales y alertas inteligentes en tiempo real.
 
 ---
 
-## 🎯 NOVEDADES V8.0
+## 🚀 Inicio Rápido
 
-### ✨ Nuevas Características
+### Ver **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** para comenzar en 2 minutos
 
-- **🔄 Intervalos Independientes:**
-  - Movimiento: cada 3s
-  - Temperatura: cada 5s  
-  - Frecuencia Cardíaca: cada 2s
+O ejecuta estos 3 comandos en 3 terminales diferentes:
 
-- **🚨 Sistema de Alertas Inteligente:**
-  - Cooldown de 90s para alertas vitales (Temp/FC)
-  - Cooldown de 60s para alertas de perímetro
-  - Variación automática entre animales
-  - Desfase de 30s entre tipos de alerta
+```powershell
+# Terminal 1: Backend
+.\start-backend.ps1
 
-- **🐑 Oveja Negra:**
-  - Selección automática de 1 animal con tendencia a escapar
-  - Algoritmo de fuga sin afectar a otros animales
+# Terminal 2: Frontend  
+.\start-frontend.ps1
 
-- **📊 Reportes y Exportación:**
-  - Sistema de ciclo de vida de alertas
-  - Generación de reportes desde alertas resueltas
-  - Exportación a CSV estructurado
+# Terminal 3: Simulador
+.\start-simulator.ps1 v8
+```
 
-- **✅ 100% Validado:**
-  - 20/20 pruebas unitarias pasadas
-  - Pruebas de integración exitosas
-  - Pruebas de estrés aprobadas
-  - Validación en tiempo real completada
+**Acceso:**
+- 🌐 Frontend: http://localhost:3000
+- 🔐 Usuario: `admin` / Contraseña: `admin123`
 
 ---
 
 ## 📚 Documentación
 
-| Documento | Descripción |
-|-----------|-------------|
-| **[DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)** | 📖 Documentación completa del sistema |
-| **`start-all.ps1`** | 🚀 Script unificado de inicio |
+| Archivo | Descripción |
+|---------|-------------|
+| **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** | ⚡ Guía de inicio rápido (2 minutos) |
+| **[DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)** | 📖 Documentación técnica completa |
+| **[REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md)** | 📊 Reporte de pruebas del sistema |
+| **[RESUMEN-EJECUTIVO.md](RESUMEN-EJECUTIVO.md)** | 📋 Resumen ejecutivo del proyecto |
 
 ---
 
-## ⚡ Inicio Ultra Rápido (1 Comando)
+## ✨ Características Principales
 
-```powershell
-.\start-all.ps1
-```
+## ✨ Características Principales
 
-Este comando inicia automáticamente:
-1. ✅ Servidor Django (Backend)
-2. ✅ Simulador de collares V8
-3. ✅ Aplicación React (Frontend)
+### 🗺️ Monitoreo en Tiempo Real
+- **Mapa interactivo** con OpenStreetMap
+- **6 animales** monitoreados simultáneamente
+- **Actualización automática** de posiciones (cada 3 segundos)
+- **3 geocercas** activas con validación geométrica
 
-**Acceder al sistema:**
-- 🌐 **Frontend:** http://localhost:3000
-- 👤 **Login:** `admin` / `admin123`
+### 🚨 Sistema de Alertas Inteligente
+- **Temperatura:** Fiebre (>40°C) | Hipotermia (<37.5°C)
+- **Frecuencia Cardíaca:** Agitación (>100 BPM) | Bajo estímulo (<50 BPM)  
+- **Perímetro:** Detección de fuga en tiempo real
+- **Cooldown anti-spam:** Vitales (180s) | Perímetro (60s)
 
----
+### 📊 Telemetría Avanzada
+- **Intervalos independientes** por tipo de dato
+- **Variación gradual y realista** de signos vitales
+- **Almacenamiento histórico** completo
+- **Panel de administración** para gestión
 
-## 📋 Inicio Manual (3 Terminales)
+### 🔧 Tecnologías
 
-### Terminal 1: Backend
-```powershell
-.\start-backend.ps1
-```
+**Backend:**
+- Django 5.0.3 + Django REST Framework
+- WebSocket (Channels 4.0 + Daphne)
+- Shapely 2.0.2 (geometría)
+- SQLite / PostgreSQL
 
-### Terminal 2: Simulador
-```powershell
-.\start-simulator-v8.ps1
-```
+**Frontend:**
+- React 18
+- Leaflet + React Leaflet
+- WebSocket con reconexión automática
+- Context API para estado global
 
-### Terminal 3: Frontend
-```powershell
-.\start-frontend.ps1
-```
-
----
-
-## 🧪 Ejecutar Pruebas
-
-### Suite Completa de Pruebas
-```powershell
-cd backend
-.\venv\Scripts\python.exe test_suite_completo.py
-```
-
-### Diagnóstico en Tiempo Real
-```powershell
-cd backend
-.\venv\Scripts\python.exe test_simulador_real.py
-```
-
-### Verificar Alertas
-```powershell
-cd backend
-.\venv\Scripts\python.exe check_alertas.py
-```
-
----
-
-## 🏗️ Arquitectura del Sistema
-
-### Backend (Django + Channels)
-- **Framework:** Django 5.0.3
-- **API:** Django REST Framework 3.14.0
-- **WebSocket:** Django Channels 4.0.0 + Daphne
-- **Autenticación:** JWT (djangorestframework-simplejwt)
-- **Geometría:** Shapely 2.0.2
-- **Base de Datos:** SQLite (dev) / PostgreSQL (prod)
-
-### Frontend (React + Leaflet)
-- **Framework:** React 18
-- **Mapas:** React Leaflet + Leaflet.Editable
-- **Enrutamiento:** React Router DOM
-- **WebSocket:** ReconnectingWebSocket
-- **HTTP:** Axios
-- **Estado:** Context API
-
-### Simulador V8.0
-- **Motor:** Python asyncio
-- **Algoritmo:** Random Walk sin tendencia
-- **Oveja Negra:** Selección automática
-- **Intervalos:** Independientes por tipo de dato
-- **Alertas:** Sistema inteligente con cooldown
-
----
-
-## 🎯 Características Principales
-
-### ✅ Funcionalidades Validadas (100%)
-
-**Dashboard en Tiempo Real**
-- Mapa interactivo con OpenStreetMap
-- Actualización automática de posiciones
-- Visualización de geocercas
-- 6 animales activos en 3 geocercas
-
-**Sistema de Alertas Inteligente**
-- 🌡️ Temperatura: Fiebre (>40°C) / Hipotermia (<37.5°C)
-- ❤️ Frecuencia Cardíaca: Agitación (>100 BPM) / Bajo estímulo (<50 BPM)
-- 🚨 Perímetro: Detección de fuga en tiempo real
-- Cooldown automático para evitar spam
-- Variación entre animales
-
-**Geocercas Dinámicas**
-- Polígonos de n puntos
-- Edición en tiempo real
-- Reubicación automática de animales
-- Validación geométrica con Shapely
-
-**Telemetría Avanzada**
-- 2,464+ registros generados
+**Simulador V8:**
+- Python asyncio
 - Intervalos independientes
-- Variaciones coherentes
-- Almacenamiento histórico
-
-**Sistema de Reportes**
-- Exportación a XML
-- Historial de alertas resueltas
-- Campos estructurados
-- Trazabilidad completa
+- Signos vitales realistas
+- Sistema de oveja negra
 
 ---
 
-## 📊 Métricas de Rendimiento
+## 🏗️ Estructura del Proyecto
 
-**Validado en Pruebas de Estrés:**
-- ⚡ 2,125 actualizaciones/segundo
-- ⚡ 2,768 consultas/segundo
-- ⚡ Latencia < 50ms
-- ⚡ 100% de precisión geográfica
-
-**Calidad del Código:**
-- ✅ 20/20 pruebas unitarias pasadas
-- ✅ 100% cobertura de funcionalidades críticas
-- ✅ 0 errores detectados
-- ✅ Sistema validado en producción
+```
+CAMPORT/
+├── backend/                      # Django + WebSocket
+│   ├── api/                     # API REST y modelos
+│   │   ├── models.py            # Animal, Telemetria, Alerta, etc.
+│   │   ├── views.py             # Endpoints API
+│   │   ├── consumers.py         # WebSocket handlers
+│   │   └── management/commands/ # Simuladores V6, V7, V8
+│   ├── utils/                   # Scripts de utilidad
+│   ├── populate_db.py           # Datos iniciales
+│   └── manage.py
+│
+├── frontend/                     # React App
+│   ├── src/
+│   │   ├── components/          # Mapa, Dashboard, Admin
+│   │   ├── context/             # Estado global
+│   │   └── services/            # API y WebSocket
+│   └── package.json
+│
+├── start-backend.ps1            # Iniciar backend
+├── start-frontend.ps1           # Iniciar frontend
+├── start-simulator.ps1          # Iniciar simulador (V6/V7/V8)
+├── stop-all.ps1                 # Detener todo
+│
+├── INICIO-RAPIDO.md             # Guía de inicio rápido
+├── DOCUMENTACION-COMPLETA.md    # Documentación técnica
+└── README.md                    # Este archivo
+```
 
 ---
 
-## 👤 Credenciales y Datos
+## 📦 Instalación Inicial
 
-### Usuarios del Sistema
-- **Admin:** `admin` / `admin123`
-- **Trabajador:** `trabajador` / `trabajador123`
-
-### Animales en Sistema
-1. **BOVINO-001** → Perímetro Secundario
-2. **BOVINO-002** → Perímetro Principal
-3. **EQUINO-001** → Perímetro Principal
-4. **EQUINO-002** → home_dash (🐑 Oveja Negra)
-5. **OVINO-001** → Perímetro Secundario
-6. **OVINO-002** → Perímetro Secundario
-
----
-
-## 📦 Instalación (Primera Vez)
+### Requisitos Previos
+- Python 3.12+
+- Node.js 16+
+- Git
 
 ### Backend
 ```bash
 cd backend
 python -m venv venv
-.\venv\Scripts\Activate.ps1  # Windows
+.\venv\Scripts\Activate.ps1     # Windows
+# source venv/bin/activate      # Linux/Mac
 pip install -r requirements.txt
 python manage.py migrate
-python populate_db.py
+python populate_db.py           # Crear datos de prueba
 ```
 
 ### Frontend
@@ -223,147 +145,153 @@ npm install
 
 ---
 
-## 👤 Credenciales
+## 🎮 Versiones del Simulador
 
-- **Admin:** `admin` / `admin123`
-- **Trabajador:** `trabajador` / `trabajador123`
+| Versión | Características | Comando |
+|---------|----------------|---------|
+| **V6** | Gravedad de centroide, fugas aleatorias | `.\start-simulator.ps1 v6` |
+| **V7** | Random walk natural, oveja negra manual | `.\start-simulator.ps1 v7` |
+| **V8** ⭐ | Signos vitales realistas, intervalos independientes | `.\start-simulator.ps1 v8` |
 
----
-
-## 🎯 Características Principales
-
-✅ **Dashboard en Tiempo Real** - Mapa interactivo con OpenStreetMap  
-✅ **Sistema de Alertas** - Notificaciones automáticas  
-✅ **Geocercas Múltiples** - Perímetros configurables  
-✅ **Telemetría en Vivo** - Temperatura, FC, ubicación  
-✅ **Simulador V6.0** - Gravedad de centroide  
-✅ **Panel de Administración** - Gestión completa  
+**Recomendado:** V8 por su realismo y funcionalidades avanzadas
 
 ---
 
-## 📁 Estructura del Proyecto
+## 👤 Usuarios del Sistema
 
+| Usuario | Email | Contraseña | Rol |
+|---------|-------|------------|-----|
+| admin | admin@ganado.com | admin123 | Administrador |
+| trabajador | trabajador@ganado.com | trabajador123 | Usuario |
+
+---
+
+## 🐄 Animales en el Sistema
+
+1. **BOVINO-001** → Perimetro secundario
+2. **BOVINO-002** 🐑 → Perímetro Principal (Oveja Negra)
+3. **EQUINO-001** → Perímetro Principal  
+4. **EQUINO-002** → home_dash
+5. **OVINO-001** → Perimetro secundario
+6. **OVINO-002** → Perimetro secundario
+
+---
+
+## 🔧 Utilidades
+
+### Diagnóstico del Sistema
+```bash
+cd backend
+python utils/diagnostico_sistema.py
 ```
-CAMPORT_V8/
-├── backend/
-│   ├── api/
-│   │   ├── models.py                    # Modelos: Animal, Geocerca, Alerta, etc.
-│   │   ├── views.py                     # API REST endpoints
-│   │   ├── consumers.py                 # WebSocket consumers
-│   │   ├── management/commands/
-│   │   │   └── simulate_collars_v8.py   # Simulador V8
-│   │   └── ...
-│   ├── test_suite_completo.py           # Suite de pruebas
-│   ├── test_simulador_real.py           # Diagnóstico en tiempo real
-│   ├── check_alertas.py                 # Verificador de alertas
-│   └── ...
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── map/                     # Componentes del mapa
-│   │   │   ├── dashboard/               # Dashboard y alertas
-│   │   │   └── admin/                   # Panel administrativo
-│   │   ├── services/
-│   │   │   └── api.js                   # Cliente API
-│   │   └── ...
-│   └── ...
-├── start-all.ps1                        # 🚀 Inicio unificado
-├── start-backend.ps1                    # Backend individual
-├── start-frontend.ps1                   # Frontend individual
-├── start-simulator-v8.ps1               # Simulador V8
-├── REPORTE-COMPLETO-PRUEBAS.md          # 📋 Reporte de validación
-└── README.md                            # Este archivo
+
+Muestra el estado completo: animales, geocercas, telemetría, alertas.
+
+### Limpiar Telemetría
+```bash
+cd backend
+python manage.py shell -c "from api.models import Telemetria; Telemetria.objects.all().delete(); print('✓ Limpiado')"
+```
+
+### Limpiar Alertas
+```bash
+cd backend
+python manage.py shell -c "from api.models import Alerta; Alerta.objects.all().delete(); print('✓ Limpiado')"
 ```
 
 ---
 
 ## 🛠️ Solución de Problemas
 
-### El simulador no genera alertas
+### Puerto 8000 ocupado
 ```powershell
-cd backend
-.\venv\Scripts\python.exe check_alertas.py  # Verificar alertas
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
 ```
 
-### Verificar que el simulador esté corriendo
-```powershell
+### No hay animales en la BD
+```bash
 cd backend
-.\venv\Scripts\python.exe test_simulador_real.py
+python populate_db.py
 ```
 
-### Ejecutar diagnóstico completo
-```powershell
-cd backend
-.\venv\Scripts\python.exe test_suite_completo.py
-```
+### WebSocket no conecta
+1. Verificar que el backend esté en puerto 8000
+2. Revisar logs del backend para errores
+3. Verificar firewall/antivirus
 
-### Ver logs del sistema
-- Django: Consola donde ejecutaste `start-backend.ps1`
-- Simulador: Consola donde ejecutaste `start-simulator-v8.ps1`
-- Frontend: Consola donde ejecutaste `start-frontend.ps1`
+### Animales no se mueven en el mapa
+1. Asegurar que el simulador esté ejecutándose
+2. Verificar logs: "Telemetría recibida" en backend
+3. Revisar consola del navegador (F12)
+
+Ver **[INICIO-RAPIDO.md](INICIO-RAPIDO.md)** para más soluciones.
 
 ---
 
-## 🚀 Comandos Útiles
+## 📝 Comandos de Desarrollo
 
-### Ejecutar Pruebas
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-python test_suite_completo.py
+### Crear migraciones
+```bash
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-### Verificar Alertas
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-python check_alertas.py
+### Crear superusuario
+```bash
+python manage.py createsuperuser
+```
+
+### Acceder al shell de Django
+```bash
+python manage.py shell
+```
+
+### Ver rutas del frontend
+```bash
+cd frontend
+npm run build    # Producción
 ```
 
 ---
 
-## 📝 Notas de Versión
+## 📊 Métricas del Sistema
 
-### V8.0 (Actual - 19/Nov/2025)
-- ✅ Intervalos independientes para movimiento, temperatura y FC
-- ✅ Sistema de alertas inteligente con cooldown
-- ✅ Oveja negra con selección automática
-- ✅ Sistema de reportes y exportación CSV
-- ✅ 100% de pruebas pasadas
-- ✅ Validación completa en tiempo real
+**Rendimiento validado:**
+- ⚡ Actualización de posiciones cada 3s
+- ⚡ Signos vitales cada 2-5s
+- ⚡ Latencia WebSocket < 50ms
+- ⚡ 100% de precisión geográfica
+
+**Estado:**
+- ✅ Sistema completamente funcional
+- ✅ Flujo de datos verificado
+- ✅ Alertas funcionando correctamente
+- ✅ Broadcast a múltiples clientes
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto es parte del Proyecto Integrado CAMPORT.  
+Proyecto Integrado CAMPORT  
 Todos los derechos reservados © 2025
 
 ---
 
-## 👥 Soporte
+## 🎉 Estado del Proyecto
 
-Para problemas o preguntas:
-1. Consultar [DOCUMENTACION-COMPLETA.md](DOCUMENTACION-COMPLETA.md)
-2. Ejecutar diagnóstico: `.\diagnostico.ps1`
-3. Revisar logs del sistema
+**✅ SISTEMA OPERATIVO Y FUNCIONAL**
 
----
+El sistema ha sido probado exhaustivamente y está listo para:
+- ✅ Monitoreo en tiempo real de ganado
+- ✅ Generación y gestión de alertas
+- ✅ Visualización geográfica precisa
+- ✅ Gestión de múltiples geocercas
+- ✅ Panel de administración completo
 
-## 🎉 Conclusión
-
-**CAMPORT V8.0 es un sistema completamente funcional y validado**, listo para monitorear ganado en tiempo real con:
-
-- ✅ Precisión geográfica del 100%
-- ✅ Alertas inteligentes y configurables
-- ✅ Rendimiento optimizado (>2,000 ops/seg)
-- ✅ Interfaz intuitiva y responsive
-- ✅ Arquitectura escalable y mantenible
-
-**Estado del Sistema: PRODUCCIÓN READY** 🚀
+**Ver [REPORTE-PRUEBA-SISTEMA-COMPLETO.md](REPORTE-PRUEBA-SISTEMA-COMPLETO.md) para detalles de las pruebas**
 
 ---
 
-**Versión:** V8.0 - Sistema Completo  
-**Última actualización:** 19 de Noviembre de 2025  
-**Estado:** ✅ VALIDADO (20/20 pruebas pasadas)
+**Última actualización:** Noviembre 2025  
+**Versión:** 8.0

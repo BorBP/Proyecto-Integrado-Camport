@@ -31,6 +31,10 @@ class AnimalViewSet(viewsets.ModelViewSet):
     serializer_class = AnimalSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Optimizar consultas usando prefetch_related para evitar N+1 queries
+        return Animal.objects.prefetch_related('telemetria').all()
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]

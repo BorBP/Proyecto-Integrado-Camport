@@ -11,10 +11,12 @@ import time
 class TelemetriaConsumer(AsyncWebsocketConsumer):
     # Sistema de cooldown para alertas (diccionario compartido entre instancias a nivel de clase)
     alert_cooldowns = {}
+    last_cleanup = time.time()  # Timestamp de última limpieza
     
     # Configuración de tiempos
-    COOLDOWN_VITALS = 90  # 90 segundos (1:30 min) para temperatura y BPM
+    COOLDOWN_VITALS = 40  # 40 segundos para temperatura y BPM
     COOLDOWN_PERIMETER = 30  # 30 segundos para alertas de perímetro
+    CLEANUP_INTERVAL = 300  # Limpiar cooldowns expirados cada 5 minutos
     
     # Desfase entre tipos de alertas para distribuir temporalmente
     OFFSET_TEMPERATURE = 0   # Temperatura: sin desfase (t=0s)
@@ -40,6 +42,13 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
 
             # Verificar alertas CON COOLDOWN
             alertas = await self.check_alerts(telemetria)
+            
+            # Log de recepción de telemetría
+            print(f"📡 Telemetría recibida: {telemetria['collar_id']} - "
+                  f"Pos:({telemetria['latitud']:.5f},{telemetria['longitud']:.5f}) "
+                  f"Temp:{telemetria['temperatura_corporal']}°C "
+                  f"BPM:{telemetria['frecuencia_cardiaca']} "
+                  f"Alertas:{len(alertas)}")
 
             # Enviar actualización a todos los clientes conectados
             await self.channel_layer.group_send(
@@ -76,7 +85,14 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
 
     async def telemetria_update(self, event):
         """Envía actualización de telemetría al cliente"""
-        await self.send(text_data=json.dumps(event['data']))
+        # Asegurar que los datos se envían correctamente al frontend
+        try:
+            data_to_send = event['data']
+            # Log para debugging
+            print(f"🔄 Enviando al frontend: {data_to_send['collar_id']} - Pos:({data_to_send['latitud']},{data_to_send['longitud']})")
+            await self.send(text_data=json.dumps(data_to_send))
+        except Exception as e:
+            print(f"❌ Error enviando al frontend: {e}")
 
     @database_sync_to_async
     def save_telemetria(self, data):
@@ -101,6 +117,36 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
             'timestamp': telemetria.timestamp.isoformat()
         }
 
+    def cleanup_expired_cooldowns(self):
+        """
+        Limpia cooldowns expirados del diccionario para evitar acumulación infinita.
+        Se ejecuta periódicamente cada CLEANUP_INTERVAL segundos.
+        """
+        now = time.time()
+        
+        # Solo limpiar si ha pasado el intervalo de limpieza
+        if now - self.last_cleanup < self.CLEANUP_INTERVAL:
+            return
+        
+        # Calcular el tiempo máximo de cooldown
+        max_cooldown = max(self.COOLDOWN_VITALS, self.COOLDOWN_PERIMETER)
+        
+        # Identificar keys expirados
+        expired_keys = []
+        for key, timestamp in self.alert_cooldowns.items():
+            if now - timestamp > max_cooldown * 2:  # Doble del cooldown máximo para seguridad
+                expired_keys.append(key)
+        
+        # Eliminar keys expirados
+        for key in expired_keys:
+            del self.alert_cooldowns[key]
+        
+        if expired_keys:
+            print(f"🧹 Limpieza de cooldowns: {len(expired_keys)} registros antiguos eliminados")
+        
+        # Actualizar timestamp de última limpieza
+        self.last_cleanup = now
+    
     def can_send_alert(self, collar_id, alert_category, cooldown_seconds):
         """
         Verifica si se puede enviar una alerta basándose en el cooldown.
@@ -113,6 +159,9 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
         Returns:
             bool: True si puede enviar la alerta, False si está en cooldown
         """
+        # Ejecutar limpieza periódica
+        self.cleanup_expired_cooldowns()
+        
         now = time.time()
         key = f"{collar_id}_{alert_category}"
 
@@ -159,13 +208,15 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
+                    alert_usuarios_created = 0
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
                             alerta=alerta,
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"🌡️🔥 ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C")
+                        alert_usuarios_created += 1
+                    print(f"🌡️🔥 ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C - {alert_usuarios_created} usuarios notificados")
                     alertas.append({
                         'tipo': 'TEMPERATURA',
                         'subtipo': 'FIEBRE',
@@ -183,13 +234,15 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
+                    alert_usuarios_created = 0
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
                             alerta=alerta,
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"🌡️❄️ ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C")
+                        alert_usuarios_created += 1
+                    print(f"🌡️❄️ ALERTA CREADA EN BD: {alerta.mensaje} - Temp: {temp}°C - {alert_usuarios_created} usuarios notificados")
                     alertas.append({
                         'tipo': 'TEMPERATURA',
                         'subtipo': 'HIPOTERMIA',
@@ -213,13 +266,15 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
+                    alert_usuarios_created = 0
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
                             alerta=alerta,
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"❤️⬆️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc}")
+                        alert_usuarios_created += 1
+                    print(f"❤️⬆️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc} - {alert_usuarios_created} usuarios notificados")
                     alertas.append({
                         'tipo': 'FRECUENCIA',
                         'subtipo': 'AGITACION',
@@ -237,13 +292,15 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                     )
                     # Crear alertas para todos los usuarios
                     usuarios = User.objects.all()
+                    alert_usuarios_created = 0
                     for usuario in usuarios:
                         AlertaUsuario.objects.create(
                             alerta=alerta,
                             usuario=usuario,
                             leido=False
                         )
-                    print(f"❤️⬇️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc}")
+                        alert_usuarios_created += 1
+                    print(f"❤️⬇️ ALERTA CREADA EN BD: {alerta.mensaje} - BPM: {fc} - {alert_usuarios_created} usuarios notificados")
                     alertas.append({
                         'tipo': 'FRECUENCIA',
                         'subtipo': 'BAJO_ESTIMULO',
@@ -273,13 +330,15 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                         )
                         # Crear alertas para todos los usuarios
                         usuarios = User.objects.all()
+                        alert_usuarios_created = 0
                         for usuario in usuarios:
                             AlertaUsuario.objects.create(
                                 alerta=alerta,
                                 usuario=usuario,
                                 leido=False
                             )
-                        print(f"🚨 ALERTA CREADA EN BD: {alerta.mensaje}")
+                            alert_usuarios_created += 1
+                        print(f"🚨 ALERTA CREADA EN BD: {alerta.mensaje} - {alert_usuarios_created} usuarios notificados")
                         alertas.append({
                             'tipo': 'PERIMETRO',
                             'subtipo': 'FUGA',
@@ -288,6 +347,8 @@ class TelemetriaConsumer(AsyncWebsocketConsumer):
                             'collar_id': animal.collar_id
                         })
 
+        except Animal.DoesNotExist:
+            print(f"❌ Animal no encontrado: {telemetria_data.get('collar_id', 'UNKNOWN')}")
         except Exception as e:
             print(f"❌ ERROR en check_alerts: {str(e)}")
             import traceback
