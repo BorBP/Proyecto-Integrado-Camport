@@ -198,9 +198,12 @@ class ReporteViewSet(viewsets.ModelViewSet):
         """Exporta todos los reportes en formato CSV"""
         reportes = Reporte.objects.all().select_related('alerta', 'alerta__animal', 'generado_por')
         
-        # Crear archivo CSV en memoria
+        # Crear archivo CSV en memoria con encoding UTF-8
         output = io.StringIO()
-        writer = csv.writer(output)
+        # Agregar BOM para que Excel reconozca UTF-8
+        output.write('\ufeff')
+        # Usar punto y coma como delimitador para Excel
+        writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
         
         # Encabezados
         writer.writerow([
@@ -240,9 +243,9 @@ class ReporteViewSet(viewsets.ModelViewSet):
         # Marcar reportes como exportados
         reportes.update(exportado=True, fecha_exportacion=timezone.now())
         
-        # Crear respuesta HTTP
+        # Crear respuesta HTTP con charset UTF-8
         output.seek(0)
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response = HttpResponse(output.getvalue(), content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="reportes_camport_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         return response
     
@@ -266,9 +269,12 @@ class ReporteViewSet(viewsets.ModelViewSet):
         if animal_id:
             reportes = reportes.filter(alerta__animal__collar_id=animal_id)
         
-        # Crear archivo CSV en memoria
+        # Crear archivo CSV en memoria con encoding UTF-8
         output = io.StringIO()
-        writer = csv.writer(output)
+        # Agregar BOM para que Excel reconozca UTF-8
+        output.write('\ufeff')
+        # Usar punto y coma como delimitador para Excel
+        writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
         
         # Encabezados
         writer.writerow([
@@ -308,9 +314,9 @@ class ReporteViewSet(viewsets.ModelViewSet):
         # Marcar reportes como exportados
         reportes.update(exportado=True, fecha_exportacion=timezone.now())
         
-        # Crear respuesta HTTP
+        # Crear respuesta HTTP con charset UTF-8
         output.seek(0)
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response = HttpResponse(output.getvalue(), content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="reportes_camport_filtrado_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         return response
 
